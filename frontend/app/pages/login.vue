@@ -55,6 +55,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import BaseButton from '~/components/ui/BaseButton.vue'
+import BaseInput from '~/components/ui/BaseInput.vue'
 import { useAuthStore } from '~/stores/auth'
 
 const email = ref('')

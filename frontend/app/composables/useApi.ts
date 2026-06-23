@@ -4,7 +4,7 @@ export const useApi = () => {
 
   return $fetch.create({
     baseURL: config.public.apiBase,
-    onRequest({ request, options, error }) {
+    onRequest({  options }) {
       const headers = new Headers(options.headers || {})
       
       if (authStore.token) {

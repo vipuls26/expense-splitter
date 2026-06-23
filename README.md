@@ -37,7 +37,6 @@ We leverage Nuxt 3 to build a secure, component-driven User Interface.
 * **Frontend Setup:** Initialized Nuxt 3, installed Pinia, upgraded to Tailwind CSS v4, and integrated PrimeIcons.
 * **Base Components:** Created `BaseInput.vue` (with dynamic password toggles), `BaseButton.vue` (with automatic loading spinners), and `DashboardCard.vue`.
 * **Nuxt Context Handling:** Addressed Nuxt Context isolation bugs by shifting cookie hydration into a plugin and utilizing direct `$fetch` within Pinia actions.
-* **Documentation:** Added PHPDoc blocks and single-line descriptive comments to all backend controllers, interfaces, and frontend store methods for seamless developer onboarding.
 
 ---
 
