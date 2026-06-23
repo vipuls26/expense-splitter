@@ -1,37 +1,41 @@
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-900 font-sans">
+  <div v-if="authStore.isLoggedIn" class="space-y-10 py-8 px-4 sm:px-6">
 
-    <main class="max-w-7xl mx-auto px-4 tablet:px-6 laptop:px-8 py-12">
-      <div v-if="authStore.isLoggedIn">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-          <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
-          <p class="text-slate-600 text-lg">Welcome to your dashboard! Here you can manage your expenses and groups.</p>
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900 mb-1">Dashboard</h1>
+        <p class="text-slate-500">Welcome back, {{ authStore.user?.name?.split(' ')[0] || 'User' }}</p>
+      </div>
+    </header>
 
-          <div class="mt-8 grid grid-cols-1 tablet:grid-cols-3 gap-6">
-            <DashboardCard title="Total Balance" value="$0.00" icon="pi-building-columns" color="emerald" />
-            <DashboardCard title="You Owe" value="$0.00" icon="pi-arrow-up-right" color="red" />
-            <DashboardCard title="You are Owed" value="$0.00" icon="pi-arrow-down-left" color="green" />
-          </div>
-        </div>
-      </div>
-      <div v-else class="text-center py-20">
-        <h1 class="text-5xl font-extrabold tracking-tight text-slate-900 mb-6">
-          Split expenses with friends
-        </h1>
-        <p class="text-xl text-slate-500 max-w-2xl mx-auto mb-10">
-          Keep track of shared expenses, balances, and who owes who. Simple, fast, and secure.
-        </p>
-        <NuxtLink to="/register"
-          class="inline-flex items-center justify-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-          Create Free Account <i class="pi pi-arrow-right text-sm"></i>
-        </NuxtLink>
-      </div>
-    </main>
+    <DashboardStats />
+
+    <GroupList :groups="groupStore.groups" :is-loading="groupStore.isLoading" />
+
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
+import { useGroupStore } from '~/stores/group'
+import DashboardStats from '~/components/dashboard/DashboardStats.vue'
+import GroupList from '~/components/dashboard/GroupList.vue'
+
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'dashboard'
+})
 
 const authStore = useAuthStore()
+const groupStore = useGroupStore()
+const router = useRouter()
+
+onMounted(() => {
+  if (authStore.isLoggedIn) {
+    groupStore.fetchGroups()
+  }
+})
 </script>
