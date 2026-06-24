@@ -93,4 +93,15 @@ class GroupService implements GroupServiceInterface
         
         return $this->groupRepository->removeMember($groupId, $memberId);
     }
+
+    public function leaveGroup($groupId, $userId)
+    {
+        $group = $this->getGroupById($groupId, $userId);
+        
+        if ($group->created_by == $userId) {
+            throw new Exception("Owner cannot leave the group. You must delete it instead.", 400);
+        }
+        
+        return $this->groupRepository->removeMember($groupId, $userId);
+    }
 }

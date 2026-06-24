@@ -4,7 +4,7 @@
     <AppSidebar :is-open="isSidebarOpen" @close="isSidebarOpen = false" />
 
     <!-- Main Content Wrapper -->
-    <div class="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-300">
+    <div class="flex-1 flex flex-col min-w-0 laptop:pl-64 transition-all duration-300">
       <AppHeader :title="pageTitle" @open-sidebar="isSidebarOpen = true" />
 
       <!-- Page Content -->

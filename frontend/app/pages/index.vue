@@ -1,8 +1,8 @@
 <template>
-  <div v-if="authStore.isLoggedIn" class="space-y-10 py-8 px-4 sm:px-6">
+  <div v-if="authStore.isLoggedIn" class="space-y-10 py-8 px-4 tablet:px-6">
 
     <!-- Header -->
-    <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <header class="flex flex-col tablet:flex-row tablet:items-end justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold text-slate-900 mb-1">Dashboard</h1>
         <p class="text-slate-500">Welcome back, {{ authStore.user?.name?.split(' ')[0] || 'User' }}</p>
@@ -21,6 +21,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useGroupStore } from '~/stores/group'
+import { useDashboardStore } from '~/stores/dashboard'
 import DashboardStats from '~/components/dashboard/DashboardStats.vue'
 import GroupList from '~/components/dashboard/GroupList.vue'
 
@@ -31,11 +32,13 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const groupStore = useGroupStore()
+const dashboardStore = useDashboardStore()
 const router = useRouter()
 
 onMounted(() => {
   if (authStore.isLoggedIn) {
     groupStore.fetchGroups()
+    dashboardStore.fetchStats()
   }
 })
 </script>

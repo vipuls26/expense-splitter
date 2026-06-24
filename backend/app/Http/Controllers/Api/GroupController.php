@@ -11,19 +11,15 @@ use Exception;
 
 class GroupController extends Controller
 {
-    protected $groupService;
-
-    public function __construct(GroupServiceInterface $groupService)
-    {
-        $this->groupService = $groupService;
-    }
+    public function __construct(private GroupServiceInterface $groupService)
+    {}
 
     public function index()
     {
         try {
             $userId = Auth::id();
             $groups = $this->groupService->getUserGroups($userId);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $groups
@@ -54,7 +50,7 @@ class GroupController extends Controller
         try {
             $userId = Auth::id();
             $group = $this->groupService->createGroup($request->all(), $userId);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Group created successfully',
@@ -74,16 +70,16 @@ class GroupController extends Controller
         try {
             $userId = Auth::id();
             $group = $this->groupService->getGroupById($id, $userId);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $group
             ]);
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
-            // Handle 403, 404 naturally
+        
             $statusCode = in_array($statusCode, [403, 404]) ? $statusCode : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -108,7 +104,7 @@ class GroupController extends Controller
         try {
             $userId = Auth::id();
             $group = $this->groupService->updateGroup($id, $request->all(), $userId);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Group updated successfully',
@@ -117,7 +113,7 @@ class GroupController extends Controller
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
             $statusCode = in_array($statusCode, [403, 404]) ? $statusCode : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -130,7 +126,7 @@ class GroupController extends Controller
         try {
             $userId = Auth::id();
             $this->groupService->deleteGroup($id, $userId);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Group deleted successfully'
@@ -138,7 +134,7 @@ class GroupController extends Controller
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
             $statusCode = in_array($statusCode, [403, 404]) ? $statusCode : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -162,7 +158,7 @@ class GroupController extends Controller
         try {
             $userId = Auth::id();
             $group = $this->groupService->addMemberToGroup($id, $request->phone_no, $userId);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Member added successfully',
@@ -171,7 +167,7 @@ class GroupController extends Controller
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
             $statusCode = in_array($statusCode, [400, 403, 404]) ? $statusCode : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -184,7 +180,7 @@ class GroupController extends Controller
         try {
             $userId = Auth::id();
             $group = $this->groupService->removeMemberFromGroup($id, $memberId, $userId);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Member removed successfully',
@@ -193,7 +189,28 @@ class GroupController extends Controller
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
             $statusCode = in_array($statusCode, [400, 403, 404]) ? $statusCode : 500;
-            
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], $statusCode);
+        }
+    }
+
+    public function leave($id)
+    {
+        try {
+            $userId = Auth::id();
+            $this->groupService->leaveGroup($id, $userId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully left the group'
+            ]);
+        } catch (Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
+            $statusCode = in_array($statusCode, [400, 403, 404]) ? $statusCode : 500;
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

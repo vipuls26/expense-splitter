@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 tablet:p-0">
     <!-- Backdrop -->
     <div class="fixed inset-0 bg-slate-900/50 transition-opacity" @click="!isLoading ? $emit('close') : null"></div>
     

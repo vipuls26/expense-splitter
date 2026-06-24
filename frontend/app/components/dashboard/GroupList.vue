@@ -13,7 +13,7 @@
 
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-3 gap-4">
       <div v-for="group in groups" :key="group.id" @click="$router.push(`/groups/${group.id}`)"
         class="group cursor-pointer bg-white rounded-xl p-5 border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all flex flex-col h-full">
         <div class="flex justify-between items-start mb-4">
