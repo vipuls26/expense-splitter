@@ -28,11 +28,15 @@
         <div class="laptop:col-span-2 space-y-6">
           <div class="flex justify-between items-center">
             <h2 class="text-lg font-semibold">Expenses</h2>
-            <BaseButton icon="pi-plus" variant="outline" size="sm">Add Expense</BaseButton>
+            <BaseButton @click="isExpenseModalOpen = true" icon="pi-plus" variant="outline" size="sm">Add Expense</BaseButton>
           </div>
-          <div class="border border-slate-100 rounded-lg p-8 text-center bg-white">
-            <p class="text-slate-500">No expenses yet.</p>
-          </div>
+          
+          <ExpenseList 
+            v-if="groupStore.currentGroup"
+            :group-id="groupStore.currentGroup.id"
+            :is-owner="authStore.user?.id == groupStore.currentGroup?.created_by"
+            @add-expense="isExpenseModalOpen = true"
+          />
         </div>
         
         <div class="space-y-6">
@@ -90,6 +94,15 @@
       @close="isDeleteDialogOpen = false"
       @confirm="executeDeleteGroup"
     />
+
+    <!-- Add Expense Modal -->
+    <AddExpenseModal 
+      v-if="groupStore.currentGroup"
+      :is-open="isExpenseModalOpen"
+      :group-id="groupStore.currentGroup.id"
+      :members="groupStore.currentGroup.members || []"
+      @close="isExpenseModalOpen = false"
+    />
   </div>
 </template>
 
@@ -101,6 +114,8 @@ import { useAuthStore } from '~/stores/auth'
 import { useToast } from '~/composables/useToast'
 import BaseButton from '~/components/ui/BaseButton.vue'
 import BaseDialog from '~/components/ui/BaseDialog.vue'
+import ExpenseList from '~/components/expense/ExpenseList.vue'
+import AddExpenseModal from '~/components/expense/AddExpenseModal.vue'
 
 definePageMeta({
   middleware: ['auth'],
@@ -118,6 +133,8 @@ const isAddingMember = ref(false)
 
 const isDeleteDialogOpen = ref(false)
 const isDeleting = ref(false)
+
+const isExpenseModalOpen = ref(false)
 
 onMounted(() => {
   const groupId = route.params.id as string
