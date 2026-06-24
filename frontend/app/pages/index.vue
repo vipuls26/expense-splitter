@@ -4,8 +4,8 @@
     <!-- Header -->
     <header class="flex flex-col tablet:flex-row tablet:items-end justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-slate-900 mb-1">Dashboard</h1>
-        <p class="text-slate-500">Welcome back, {{ authStore.user?.name?.split(' ')[0] || 'User' }}</p>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">Dashboard</h1>
+        <p class="text-slate-500 dark:text-slate-400">Welcome back, {{ authStore.user?.name?.split(' ')[0] || 'User' }}</p>
       </div>
     </header>
 
@@ -23,7 +23,7 @@ import { useAuthStore } from '~/stores/auth'
 import { useGroupStore } from '~/stores/group'
 import { useDashboardStore } from '~/stores/dashboard'
 import DashboardStats from '~/components/dashboard/DashboardStats.vue'
-import GroupList from '~/components/dashboard/GroupList.vue'
+import GroupList from '~/components/group/GroupList.vue'
 
 definePageMeta({
   middleware: ['auth'],

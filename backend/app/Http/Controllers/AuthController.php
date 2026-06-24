@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\auth\LoginRequest;
 use App\Http\Requests\auth\RegisterRequest;
-use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\AuthService;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
     // Inject the AuthServiceInterface
-    public function __construct(private AuthServiceInterface $authService)
+    public function __construct(private AuthService $authService)
     {
     }
 
@@ -18,7 +18,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         $data = $request->validated();
-        
+
         $result = $this->authService->login($data);
 
         return response()->json([
@@ -33,7 +33,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $data = $request->validated();
-        
+
         $result = $this->authService->register($data);
 
         return response()->json([

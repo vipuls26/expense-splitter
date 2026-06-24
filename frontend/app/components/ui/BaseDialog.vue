@@ -4,23 +4,23 @@
     <div class="fixed inset-0 bg-slate-900/50 transition-opacity" @click="!isLoading ? $emit('close') : null"></div>
     
     <!-- Dialog -->
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md relative z-10 overflow-hidden transform transition-all">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md relative z-10 overflow-hidden transform transition-all">
       <!-- Header / Icon -->
       <div class="p-6 pb-4">
         <div class="flex items-center gap-4 mb-2">
           <div v-if="icon" :class="['flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full', iconBgClass, iconTextClass]">
             <i :class="['pi text-lg', icon]"></i>
           </div>
-          <h3 class="text-lg font-bold text-slate-900">{{ title }}</h3>
+          <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ title }}</h3>
         </div>
-        <p class="text-slate-500 text-sm pl-14">
+        <p class="text-slate-500 dark:text-slate-400 text-sm pl-14">
           <slot>{{ message }}</slot>
         </p>
       </div>
       
       <!-- Footer -->
-      <div class="bg-slate-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-100">
-        <BaseButton @click="$emit('close')" :disabled="isLoading" variant="outline" size="sm" class="bg-white">
+      <div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+        <BaseButton @click="$emit('close')" :disabled="isLoading" variant="outline" size="sm" class="bg-white dark:bg-transparent">
           {{ cancelText || 'Cancel' }}
         </BaseButton>
         <BaseButton 
@@ -60,12 +60,12 @@ defineEmits<{
 }>()
 
 const iconBgClass = computed(() => {
-  if (props.confirmVariant === 'danger') return 'bg-red-100'
-  return 'bg-indigo-100'
+  if (props.confirmVariant === 'danger') return 'bg-red-100 dark:bg-red-900/30'
+  return 'bg-indigo-100 dark:bg-indigo-900/30'
 })
 
 const iconTextClass = computed(() => {
-  if (props.confirmVariant === 'danger') return 'text-red-600'
-  return 'text-indigo-600'
+  if (props.confirmVariant === 'danger') return 'text-red-600 dark:text-red-400'
+  return 'text-indigo-600 dark:text-indigo-400'
 })
 </script>

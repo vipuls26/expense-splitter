@@ -1,79 +1,73 @@
 <template>
-  <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+  <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
     
     <!-- Header -->
-    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+    <div class="px-4 phone-lg:px-6 py-4 phone-lg:py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
       <div>
-        <h2 class="text-xl font-bold text-slate-900">Group Expenses</h2>
-        <p class="text-sm text-slate-500 mt-1">Track shared costs and bills</p>
+        <h2 class="text-lg phone-lg:text-xl font-bold text-slate-900 dark:text-slate-100">Group Expenses</h2>
+        <p class="text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mt-0.5 phone-lg:mt-1">Track shared costs and bills</p>
       </div>
       <button 
         @click="$emit('add-expense')"
-        class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors"
+        class="inline-flex items-center gap-1.5 phone-lg:gap-2 rounded-md phone-lg:rounded-lg bg-emerald-600 px-3 phone-lg:px-4 py-1.5 phone-lg:py-2 text-xs phone-lg:text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors"
       >
-        <i class="pi pi-plus text-xs"></i>
+        <i class="pi pi-plus text-[10px] phone-lg:text-xs"></i>
         Add Expense
       </button>
     </div>
 
     <!-- Loading State -->
     <div v-if="expenseStore.isLoading && expenseStore.expenses.length === 0" class="p-10 text-center">
-      <i class="pi pi-spinner pi-spin text-emerald-600 text-2xl mb-3"></i>
-      <p class="text-slate-500 text-sm">Loading expenses...</p>
+      <i class="pi pi-spinner pi-spin text-emerald-600 dark:text-emerald-400 text-2xl mb-3"></i>
+      <p class="text-slate-500 dark:text-slate-400 text-sm">Loading expenses...</p>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="expenseStore.expenses.length === 0" class="p-12 text-center flex flex-col items-center">
-      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
-        <i class="pi pi-receipt text-2xl text-slate-400"></i>
+      <div class="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-700">
+        <i class="pi pi-receipt text-2xl text-slate-400 dark:text-slate-500"></i>
       </div>
-      <h3 class="text-lg font-medium text-slate-900 mb-1">No expenses yet</h3>
-      <p class="text-slate-500 text-sm mb-6 max-w-sm">When someone pays for something shared, add an expense to automatically split the cost.</p>
-      <button 
-        @click="$emit('add-expense')"
-        class="text-emerald-600 font-medium hover:text-emerald-700 hover:underline text-sm"
-      >
-        Add your first expense
-      </button>
+      <h3 class="text-lg font-medium text-slate-900 dark:text-slate-100 mb-1">No expenses yet</h3>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6 max-w-sm">When someone pays for something shared, add an expense to automatically split the cost.</p>
     </div>
 
     <!-- Expense List -->
-    <div v-else class="divide-y divide-slate-100">
+    <div v-else class="divide-y divide-slate-100 dark:divide-slate-800">
       <div 
         v-for="expense in expenseStore.expenses" 
         :key="expense.id"
-        class="p-4 tablet:p-6 hover:bg-slate-50 transition-colors flex flex-col tablet:flex-row tablet:items-center justify-between gap-4"
+        class="p-4 tablet:p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex flex-col tablet:flex-row tablet:items-center justify-between gap-4"
       >
         <!-- Left Side: Date & Details -->
         <div class="flex items-start gap-4">
-          <div class="flex flex-col items-center justify-center bg-slate-100 rounded-lg w-12 h-12 shrink-0 border border-slate-200">
-            <span class="text-xs font-bold text-slate-500 uppercase">{{ getMonth(expense.date) }}</span>
-            <span class="text-lg font-bold text-slate-900 leading-none">{{ getDay(expense.date) }}</span>
+          <div class="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-lg w-12 h-12 shrink-0 border border-slate-200 dark:border-slate-700">
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">{{ getMonth(expense.date) }}</span>
+            <span class="text-lg font-bold text-slate-900 dark:text-slate-100 leading-none">{{ getDay(expense.date) }}</span>
           </div>
           
           <div>
-            <h4 class="font-semibold text-slate-900 text-base mb-1">{{ expense.description }}</h4>
-            <div class="text-sm text-slate-500 flex items-center gap-1.5">
-              <span class="font-medium text-slate-700">{{ expense.payer?.id === authStore.user?.id ? 'You' : expense.payer?.name }}</span> 
+            <h4 class="font-semibold text-slate-900 dark:text-slate-100 text-base mb-1">{{ expense.description }}</h4>
+            <div class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span class="font-medium text-slate-700 dark:text-slate-300">{{ expense.payer?.id === authStore.user?.id ? 'You' : expense.payer?.name }}</span> 
               <span>paid</span>
-              <span class="font-semibold text-emerald-600">${{ parseFloat(expense.amount).toFixed(2) }}</span>
+              <span class="font-semibold text-emerald-600 dark:text-emerald-400">₹{{ parseFloat(expense.amount).toFixed(2) }}</span>
             </div>
           </div>
         </div>
 
         <!-- Right Side: Split details & Actions -->
-        <div class="flex items-center justify-between tablet:justify-end gap-6 border-t tablet:border-0 border-slate-100 pt-3 tablet:pt-0 mt-3 tablet:mt-0">
+        <div class="flex items-center justify-between tablet:justify-end gap-6 border-t tablet:border-0 border-slate-100 dark:border-slate-800 pt-3 tablet:pt-0 mt-3 tablet:mt-0">
           <div class="text-sm text-right">
-            <span class="text-slate-500 block mb-0.5">You borrowed</span>
-            <span :class="['font-bold', getMyShare(expense) > 0 ? 'text-red-500' : 'text-slate-400']">
-              ${{ getMyShare(expense).toFixed(2) }}
+            <span class="text-slate-500 dark:text-slate-400 block mb-0.5">You borrowed</span>
+            <span :class="['font-bold', getMyShare(expense) > 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-400 dark:text-slate-500']">
+              ₹{{ getMyShare(expense).toFixed(2) }}
             </span>
           </div>
           
           <button 
             v-if="expense.paid_by === authStore.user?.id || isOwner"
             @click="handleDelete(expense.id)"
-            class="text-slate-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50"
+            class="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
             title="Delete Expense"
           >
             <i class="pi pi-trash"></i>

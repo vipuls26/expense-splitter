@@ -4,104 +4,204 @@ namespace App\Services;
 
 use App\Repositories\Interfaces\GroupRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
-use App\Services\Interfaces\GroupServiceInterface;
-use Exception;
+use Illuminate\Support\Facades\DB;
+use App\Models\Group;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class GroupService implements GroupServiceInterface
+class GroupService
 {
-    protected $groupRepository;
-    protected $userRepository;
+    // Inject group and user repositories for database operations
+    public function __construct(
+        private GroupRepositoryInterface $groupRepository,
+        private UserRepositoryInterface $userRepository,
+        private BalanceService $balanceService
+    ) {}
 
-    public function __construct(GroupRepositoryInterface $groupRepository, UserRepositoryInterface $userRepository)
+    // Check if the given user is the owner of the group
+    private function isOwner(Group $group, int $userId): bool
     {
-        $this->groupRepository = $groupRepository;
-        $this->userRepository = $userRepository;
+        return $group->created_by === $userId;
     }
 
-    public function getUserGroups($userId)
+    // Get all groups the given user belongs to
+    public function getUserGroups(int $userId): Collection
     {
         return $this->groupRepository->getUserGroups($userId);
     }
 
-    public function createGroup(array $data, $userId)
+    // Create a new group and automatically add the creator as owner
+    public function createGroup(array $data, int $userId): Group
     {
-        $data['created_by'] = $userId;
-        $group = $this->groupRepository->create($data);
-        $this->groupRepository->addMember($group->id, $userId, 'owner');
-        return $group;
+        return DB::transaction(function () use ($data, $userId) {
+            $data['created_by'] = $userId;
+
+            $group = $this->groupRepository->create($data);
+
+            $this->groupRepository->addMember(
+                $group->id,
+                $userId,
+                'owner'
+            );
+
+            return $group;
+        });
     }
 
-    public function getGroupById($id, $userId)
+    // Find a group by ID and make sure the user is a member of it
+    public function getGroupById(int $id, int $userId): Group
     {
         $group = $this->groupRepository->findById($id);
-        
-        // Basic check to see if user belongs to group
-        $isMember = $group->members->contains('id', $userId) || $group->created_by == $userId;
-        
-        if (!$isMember) {
-            throw new Exception("Unauthorized access to group", 403);
+
+        if (! $group->members->contains('id', $userId)) {
+            throw new AuthorizationException(
+                'Unauthorized access to group'
+            );
         }
-        
+
         return $group;
     }
 
-    public function updateGroup($id, array $data, $userId)
+    // Update group details — only members can update
+    public function updateGroup(int $id, array $data, int $userId): Group
     {
-        $group = $this->getGroupById($id, $userId); // Also checks authorization
-        return $this->groupRepository->update($id, $data);
+        $this->getGroupById($id, $userId);
+
+        return $this->groupRepository->update(
+            $id,
+            $data
+        );
     }
 
-    public function deleteGroup($id, $userId)
+    // Delete a group — only the creator can do this
+    public function deleteGroup(int $id, int $userId): int
     {
         $group = $this->getGroupById($id, $userId);
-        
-        if ($group->created_by != $userId) {
-            throw new Exception("Only the creator can delete this group", 403);
+
+        if (! $this->isOwner($group, $userId)) {
+            throw new AuthorizationException(
+                'Only the creator can delete this group'
+            );
         }
-        
+
+        $settlements = $this->balanceService->calculateSettlements($id);
+        if (count($settlements) > 0) {
+            throw new BadRequestHttpException(
+                'Cannot delete group because there are unsettled balances. All debts must be settled first.'
+            );
+        }
+
         return $this->groupRepository->delete($id);
     }
 
-    public function addMemberToGroup($groupId, $phone, $userId)
-    {
-        $group = $this->getGroupById($groupId, $userId);
-        
+    // Add a new member to the group using their phone number
+    public function addMemberToGroup(
+        int $groupId,
+        string $phone,
+        int $userId
+    ): Group {
+        $group = $this->getGroupById(
+            $groupId,
+            $userId
+        );
+
         $userToAdd = $this->userRepository->findByPhone($phone);
-        
-        if (!$userToAdd) {
-            throw new Exception("User with this phone number not found", 404);
+
+        if (! $userToAdd) {
+            throw new ModelNotFoundException(
+                'User with this phone number does not exist'
+            );
         }
-        
+
+        if ($userToAdd->id === $userId) {
+            throw new BadRequestHttpException(
+                'You cannot add yourself to the group'
+            );
+        }
+
         if ($group->members->contains('id', $userToAdd->id)) {
-            throw new Exception("User is already a member of this group", 400);
+            throw new BadRequestHttpException(
+                'User is already a member of the group'
+            );
         }
-        
-        return $this->groupRepository->addMember($groupId, $userToAdd->id);
+
+        return $this->groupRepository->addMember(
+            $groupId,
+            $userToAdd->id,
+            'member'
+        );
     }
 
-    public function removeMemberFromGroup($groupId, $memberId, $userId)
-    {
-        $group = $this->getGroupById($groupId, $userId);
-        
-        if ($group->created_by != $userId && $memberId != $userId) {
-            throw new Exception("Unauthorized to remove member", 403);
+    // Remove a specific member from the group — owner or the member themselves can do this
+    public function removeMemberFromGroup(
+        int $groupId,
+        int $memberId,
+        int $userId
+    ): Group {
+        $group = $this->getGroupById(
+            $groupId,
+            $userId
+        );
+
+        if (! $this->isOwner($group, $userId) && $memberId !== $userId) {
+            throw new AuthorizationException(
+                'Unauthorized to remove member'
+            );
         }
-        
-        if ($group->created_by == $memberId) {
-            throw new Exception("Cannot remove the creator of the group", 400);
+
+        if ($this->isOwner($group, $memberId)) {
+            throw new BadRequestHttpException(
+                'Cannot remove the group owner'
+            );
         }
-        
-        return $this->groupRepository->removeMember($groupId, $memberId);
+
+        if (! $group->members->contains('id', $memberId)) {
+            throw new ModelNotFoundException(
+                'Member not found in group'
+            );
+        }
+
+        $balances = $this->balanceService->calculateBalances($groupId);
+        if (isset($balances[$memberId]) && abs($balances[$memberId]['balance']) > 0.01) {
+            throw new BadRequestHttpException(
+                'Cannot remove member because they have unsettled balances. All debts must be settled first.'
+            );
+        }
+
+        return $this->groupRepository->removeMember(
+            $groupId,
+            $memberId
+        );
     }
 
-    public function leaveGroup($groupId, $userId)
-    {
-        $group = $this->getGroupById($groupId, $userId);
-        
-        if ($group->created_by == $userId) {
-            throw new Exception("Owner cannot leave the group. You must delete it instead.", 400);
+    // Let a member exit a group on their own — owner must delete instead
+    public function leaveGroup(
+        int $groupId,
+        int $userId
+    ): void {
+        $group = $this->getGroupById(
+            $groupId,
+            $userId
+        );
+
+        if ($this->isOwner($group, $userId)) {
+            throw new BadRequestHttpException(
+                'Owner cannot leave the group. You must delete it instead.'
+            );
         }
-        
-        return $this->groupRepository->removeMember($groupId, $userId);
+
+        $balances = $this->balanceService->calculateBalances($groupId);
+        if (isset($balances[$userId]) && abs($balances[$userId]['balance']) > 0.01) {
+            throw new BadRequestHttpException(
+                'Cannot leave group because you have unsettled balances. All debts must be settled first.'
+            );
+        }
+
+        $this->groupRepository->removeMember(
+            $groupId,
+            $userId
+        );
     }
 }

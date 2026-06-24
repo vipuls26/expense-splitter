@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors">
     <!-- Sidebar -->
     <AppSidebar :is-open="isSidebarOpen" @close="isSidebarOpen = false" />
 

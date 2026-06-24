@@ -22,7 +22,7 @@
               </div>
               <div>
                 <p class="text-sm font-medium text-slate-900">You owe {{ debt.to.name }}</p>
-                <p class="text-lg font-bold text-red-600">${{ debt.amount.toFixed(2) }}</p>
+                <p class="text-lg font-bold text-red-600">₹{{ debt.amount.toFixed(2) }}</p>
               </div>
             </div>
             <BaseButton @click="openSettleModal(debt)" size="sm" class="bg-emerald-600 hover:bg-emerald-700 text-white border-none">
@@ -37,7 +37,7 @@
               </div>
               <div>
                 <p class="text-sm font-medium text-slate-900">{{ debt.from.name }} owes you</p>
-                <p class="text-lg font-bold text-emerald-600">${{ debt.amount.toFixed(2) }}</p>
+                <p class="text-lg font-bold text-emerald-600">₹{{ debt.amount.toFixed(2) }}</p>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@
               'text-red-600': data.balance < 0,
               'text-slate-400': data.balance === 0
             }" class="font-bold">
-              {{ data.balance > 0 ? '+' : '' }}${{ data.balance.toFixed(2) }}
+              {{ data.balance > 0 ? '+' : '' }}₹{{ data.balance.toFixed(2) }}
             </div>
           </div>
         </div>
@@ -75,10 +75,10 @@
     <BaseDialog
       :is-open="isSettleModalOpen"
       title="Settle Up"
-      :message="`Record a cash or external payment of $${selectedDebt?.amount.toFixed(2)} to ${selectedDebt?.to.name}?`"
+      :message="`Record a cash or external payment of ₹${selectedDebt?.amount.toFixed(2)} to ${selectedDebt?.to.name}?`"
       confirm-text="Record Payment"
       cancel-text="Cancel"
-      confirm-variant="primary"
+      confirm-variant="solid"
       icon="pi-money-bill"
       :is-loading="isSettling"
       @close="isSettleModalOpen = false"

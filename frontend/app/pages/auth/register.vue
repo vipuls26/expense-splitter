@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-white p-4">
+  <div class="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 p-4 transition-colors">
     <div class="max-w-sm w-full space-y-8">
       <div class="text-center">
-        <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">Create Account</h1>
-        <p class="text-slate-500 mt-2 text-sm">Sign up to get started.</p>
+        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">Create Account</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Sign up to get started.</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="space-y-4">
@@ -22,7 +22,7 @@
           icon="pi-phone" placeholder="Enter Phone Number" :error="errors.phone_no" required />
 
         <div v-if="errorMsg"
-          class="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100">
+          class="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/30">
           <i class="pi pi-exclamation-circle text-lg"></i>
           {{ errorMsg }}
         </div>
@@ -32,9 +32,9 @@
         </BaseButton>
       </form>
 
-      <p class="text-center text-sm text-slate-600">
+      <p class="text-center text-sm text-slate-600 dark:text-slate-400">
         Already have an account?
-        <NuxtLink to="/auth/login" class="text-indigo-600 hover:text-indigo-700 font-medium hover:underline">
+        <NuxtLink to="/auth/login" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline">
           Sign in
         </NuxtLink>
       </p>
