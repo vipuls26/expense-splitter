@@ -11,7 +11,10 @@
         :required="required"
         :value="modelValue"
         @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-        class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors outline-none"
+        :class="[
+          'w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 transition-colors outline-none',
+          error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-indigo-500 focus:border-indigo-500'
+        ]"
         :placeholder="placeholder"
       />
       <button 
@@ -23,6 +26,10 @@
         <i :class="['pi text-lg', showPassword ? 'pi-eye-slash' : 'pi-eye']"></i>
       </button>
     </div>
+    <p v-if="error" class="mt-1 text-sm text-red-600 flex items-center gap-1">
+      <i class="pi pi-exclamation-circle text-xs"></i>
+      {{ error }}
+    </p>
   </div>
 </template>
 
@@ -37,10 +44,12 @@ const props = withDefaults(defineProps<{
   type?: string
   placeholder?: string
   required?: boolean
+  error?: string
 }>(), {
   type: 'text',
   placeholder: '',
-  required: false
+  required: false,
+  error: ''
 })
 
 defineEmits<{

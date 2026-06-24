@@ -22,12 +22,12 @@
           </div>
 
           <div v-else class="flex items-center gap-3">
-            <NuxtLink to="/login"
+            <NuxtLink to="/auth/login"
               class="text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors py-2 px-3">
               Sign in
             </NuxtLink>
 
-            <NuxtLink to="/register"
+            <NuxtLink to="/auth/register"
               class="text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 px-5 py-2 rounded-lg transition-colors flex items-center gap-2 shadow-sm">
               <span>Get Started</span>
               <i class="pi pi-arrow-right text-xs"></i>
@@ -49,6 +49,6 @@ const router = useRouter()
 
 async function handleLogout() {
   await authStore.logout()
-  router.push('/login')
+  router.push('/auth/login')
 }
 </script>

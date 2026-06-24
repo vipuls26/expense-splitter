@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'phone_no'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -29,5 +29,22 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function groups()
+    {
+        return $this->belongsToMany(
+            Group::class,
+            'group_members'
+        )->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function createdGroups()
+    {
+        return $this->hasMany(
+            Group::class,
+            'created_by'
+        );
     }
 }
