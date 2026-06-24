@@ -20,7 +20,7 @@
             type="text" 
             v-model="form.description" 
             placeholder="e.g. Dinner, Uber, Groceries"
-            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-4 py-2 border"
+            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 tablet:text-sm px-4 py-2 border"
           />
         </div>
 
@@ -43,7 +43,7 @@
           <label class="block text-sm font-medium text-slate-700 mb-1">Paid By</label>
           <select 
             v-model="form.paid_by" 
-            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm px-4 py-2 border"
+            class="w-full rounded-lg border-slate-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 tablet:text-sm px-4 py-2 border"
           >
             <option v-for="member in members" :key="member.id" :value="member.id">
               {{ member.id === authStore.user?.id ? 'You' : member.name }}

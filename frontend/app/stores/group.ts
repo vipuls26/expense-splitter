@@ -94,6 +94,64 @@ export const useGroupStore = defineStore('group', () => {
     }
   }
 
+  async function removeMember(groupId: number, memberId: number) {
+    isLoading.value = true
+    try {
+      const response: any = await api(`/groups/${groupId}/members/${memberId}`, {
+        method: 'DELETE'
+      })
+      if (response.success && currentGroup.value) {
+        await fetchGroup(groupId)
+      }
+      return response
+    } catch (err: any) {
+      console.error('Failed to remove member', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function leaveGroup(groupId: number | string) {
+    isLoading.value = true
+    try {
+      const response: any = await api(`/groups/${groupId}/leave`, {
+        method: 'POST'
+      })
+      if (response.success) {
+        groups.value = groups.value.filter(g => g.id !== Number(groupId))
+        if (currentGroup.value?.id === Number(groupId)) {
+          currentGroup.value = null
+        }
+      }
+      return response
+    } catch (err: any) {
+      console.error('Failed to leave group', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function updateGroup(groupId: number | string, data: { name?: string, description?: string }) {
+    isLoading.value = true
+    try {
+      const response: any = await api(`/groups/${groupId}`, {
+        method: 'PUT',
+        body: data
+      })
+      if (response.success && currentGroup.value) {
+        await fetchGroup(groupId)
+      }
+      return response
+    } catch (err: any) {
+      console.error('Failed to update group', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     groups,
     currentGroup,
@@ -102,6 +160,9 @@ export const useGroupStore = defineStore('group', () => {
     fetchGroup,
     createGroup,
     addMember,
+    removeMember,
+    leaveGroup,
+    updateGroup,
     deleteGroup
   }
 })

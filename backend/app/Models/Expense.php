@@ -11,6 +11,7 @@ class Expense extends Model
         'paid_by',
         'amount',
         'description',
+        'is_settlement',
         'date',
     ];
 

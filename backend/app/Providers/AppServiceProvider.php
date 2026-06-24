@@ -2,6 +2,16 @@
 
 namespace App\Providers;
 
+use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\UserRepository;
+use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\AuthService;
+use App\Repositories\Interfaces\GroupRepositoryInterface;
+use App\Repositories\GroupRepository;
+use App\Services\Interfaces\GroupServiceInterface;
+use App\Services\GroupService;
+use App\Repositories\Interfaces\ExpenseRepositoryInterface;
+use App\Repositories\ExpenseRepository; 
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,23 +22,28 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Repositories\Interfaces\UserRepositoryInterface::class,
-            \App\Repositories\UserRepository::class
+            UserRepositoryInterface::class,
+            UserRepository::class
         );
 
         $this->app->bind(
-            \App\Services\Interfaces\AuthServiceInterface::class,
-            \App\Services\AuthService::class
+            AuthServiceInterface::class,
+            AuthService::class
         );
 
         $this->app->bind(
-            \App\Repositories\Interfaces\GroupRepositoryInterface::class,
-            \App\Repositories\GroupRepository::class
+            GroupRepositoryInterface::class,
+            GroupRepository::class
         );
 
         $this->app->bind(
-            \App\Services\Interfaces\GroupServiceInterface::class,
-            \App\Services\GroupService::class
+            GroupServiceInterface::class,
+            GroupService::class
+        );
+
+        $this->app->bind(
+            ExpenseRepositoryInterface::class,
+            ExpenseRepository::class
         );
     }
 

@@ -42,7 +42,7 @@
       <div 
         v-for="expense in expenseStore.expenses" 
         :key="expense.id"
-        class="p-4 sm:p-6 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        class="p-4 tablet:p-6 hover:bg-slate-50 transition-colors flex flex-col tablet:flex-row tablet:items-center justify-between gap-4"
       >
         <!-- Left Side: Date & Details -->
         <div class="flex items-start gap-4">
@@ -62,7 +62,7 @@
         </div>
 
         <!-- Right Side: Split details & Actions -->
-        <div class="flex items-center justify-between sm:justify-end gap-6 border-t sm:border-0 border-slate-100 pt-3 sm:pt-0 mt-3 sm:mt-0">
+        <div class="flex items-center justify-between tablet:justify-end gap-6 border-t tablet:border-0 border-slate-100 pt-3 tablet:pt-0 mt-3 tablet:mt-0">
           <div class="text-sm text-right">
             <span class="text-slate-500 block mb-0.5">You borrowed</span>
             <span :class="['font-bold', getMyShare(expense) > 0 ? 'text-red-500' : 'text-slate-400']">

@@ -11,4 +11,5 @@ interface GroupServiceInterface
     public function deleteGroup($id, $userId);
     public function addMemberToGroup($groupId, $phone, $userId);
     public function removeMemberFromGroup($groupId, $memberId, $userId);
+    public function leaveGroup($groupId, $userId);
 }

@@ -77,7 +77,7 @@ class GroupController extends Controller
             ]);
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;
-            // Handle 403, 404 naturally
+        
             $statusCode = in_array($statusCode, [403, 404]) ? $statusCode : 500;
 
             return response()->json([
@@ -185,6 +185,27 @@ class GroupController extends Controller
                 'success' => true,
                 'message' => 'Member removed successfully',
                 'data' => $group
+            ]);
+        } catch (Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
+            $statusCode = in_array($statusCode, [400, 403, 404]) ? $statusCode : 500;
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], $statusCode);
+        }
+    }
+
+    public function leave($id)
+    {
+        try {
+            $userId = Auth::id();
+            $this->groupService->leaveGroup($id, $userId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully left the group'
             ]);
         } catch (Exception $e) {
             $statusCode = $e->getCode() ?: 500;

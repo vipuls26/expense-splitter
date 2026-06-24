@@ -1,11 +1,11 @@
 <template>
   <!-- Mobile Sidebar Overlay -->
-  <div v-if="isOpen" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden" @click="$emit('close')"></div>
+  <div v-if="isOpen" class="fixed inset-0 bg-slate-900/50 z-40 laptop:hidden" @click="$emit('close')"></div>
 
   <!-- Sidebar Container -->
   <aside 
     :class="[
-      'fixed top-0 left-0 z-50 h-screen w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0',
+      'fixed top-0 left-0 z-50 h-screen w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out laptop:translate-x-0',
       isOpen ? 'translate-x-0' : '-translate-x-full'
     ]"
   >
@@ -28,12 +28,12 @@
         @click="$emit('close')"
         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
         :class="[
-          $route.path === item.href 
+          (item.href === '/' ? $route.path === '/' : $route.path.startsWith(item.href))
             ? 'bg-emerald-50 text-emerald-700' 
             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
         ]"
       >
-        <i :class="['pi text-lg', item.icon, $route.path === item.href ? 'text-emerald-600' : 'text-slate-400']"></i>
+        <i :class="['pi text-lg', item.icon, (item.href === '/' ? $route.path === '/' : $route.path.startsWith(item.href)) ? 'text-emerald-600' : 'text-slate-400']"></i>
         {{ item.name }}
       </NuxtLink>
     </div>
@@ -71,9 +71,5 @@ const route = useRoute()
 const navigation = [
   { name: 'Dashboard', href: '/', icon: 'pi-th-large' },
   { name: 'Groups', href: '/groups', icon: 'pi-users' },
-  { name: 'Wallet', href: '#', icon: 'pi-wallet' },
-  { name: 'Expenses', href: '#', icon: 'pi-receipt' },
-  { name: 'Settlements', href: '#', icon: 'pi-check-circle' },
-  { name: 'Profile', href: '#', icon: 'pi-user' },
 ]
 </script>
