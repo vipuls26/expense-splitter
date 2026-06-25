@@ -1,100 +1,99 @@
-import { useApi } from '~/composables/useApi'
-import type { Group, CreateGroupPayload, UpdateGroupPayload } from '~/types/group'
-import type { ApiResponse, MessageResponse } from '~/types/api'
-import type { Id } from '~/types/common'
+import { useApi } from "~/composables/useApi";
+import type {
+  Group,
+  CreateGroupPayload,
+  UpdateGroupPayload,
+} from "~/types/group";
+import type { ApiResponse, MessageResponse } from "~/types/api";
+import type { Id } from "~/types/common";
 
-export const useGroupStore = defineStore('group', () => {
-  const groups = ref<Group[]>([])
-  const currentGroup = ref<Group | null>(null)
-  const isLoading = ref(false)
-  const api = useApi()
+export const useGroupStore = defineStore("group", () => {
+  const groups = ref<Group[]>([]);
+  const currentGroup = ref<Group | null>(null);
+  const isLoading = ref(false);
+  const api = useApi();
 
   // fetch group details and members
   async function fetchGroups() {
     return execute(async () => {
-      const response = await api<ApiResponse<Group[]>>('/groups')
+      const response = await api<ApiResponse<Group[]>>("/groups");
 
       if (response.success) {
-        groups.value = response.data
+        groups.value = response.data;
       }
 
-      return response
-    })
+      return response;
+    });
   }
 
-  // fetch a single group by ID
+  // fetch a single group by id
   async function fetchGroup(id: Id) {
     return execute(async () => {
-      const response = await api<ApiResponse<Group>>(`/groups/${id}`, { method: 'GET' })
+      const response = await api<ApiResponse<Group>>(`/groups/${id}`, {
+        method: "GET",
+      });
       if (response.success) {
-        currentGroup.value = response.data
+        currentGroup.value = response.data;
       }
-      return response
-    })
+      return response;
+    });
   }
 
   // create a new group
   async function createGroup(data: CreateGroupPayload) {
-  return execute(async () => {
-    const response = await api<ApiResponse<Group>>('/groups', {
-      method: 'POST',
-      body: data
-    })
+    return execute(async () => {
+      const response = await api<ApiResponse<Group>>("/groups", {
+        method: "POST",
+        body: data,
+      });
 
-    if (response.success) {
-      groups.value.push(response.data)
-    }
+      if (response.success) {
+        groups.value.push(response.data);
+      }
 
-    return response
-  })
-}
+      return response;
+    });
+  }
 
   // add a member to a group
   async function addMember(groupId: Id, phone_no: string) {
-
     return execute(async () => {
       const response = await api<ApiResponse<Group>>(
         `/groups/${groupId}/members`,
         {
-          method: 'POST',
-          body: { phone_no }
-        }
-      )
+          method: "POST",
+          body: { phone_no },
+        },
+      );
       if (response.success) {
-        currentGroup.value = response.data
+        currentGroup.value = response.data;
 
         const index = groups.value.findIndex(
-          group => group.id === Number(groupId)
-        )
+          (group) => group.id === Number(groupId),
+        );
 
         if (index !== -1) {
-          groups.value[index] = response.data
+          groups.value[index] = response.data;
         }
       }
-      return response
-    })
+      return response;
+    });
   }
 
-
-  // delete a group by ID
+  // delete a group by id
   async function deleteGroup(id: Id) {
     return execute(async () => {
-      const response = await api<MessageResponse>(
-        `/groups/${id}`,
-        {
-          method: 'DELETE'
-        }
-      )
+      const response = await api<MessageResponse>(`/groups/${id}`, {
+        method: "DELETE",
+      });
       if (response.success) {
-        groups.value = groups.value.filter(
-          group => group.id !== Number(id)
-        )
+        groups.value = groups.value.filter((group) => group.id !== Number(id));
         if (currentGroup.value?.id === Number(id)) {
-          currentGroup.value = null
+          currentGroup.value = null;
         }
       }
-      return response
-    })
+      return response;
+    });
   }
 
   // remove a member from a group
@@ -103,78 +102,70 @@ export const useGroupStore = defineStore('group', () => {
       const response = await api<ApiResponse<Group>>(
         `/groups/${groupId}/members/${memberId}`,
         {
-          method: 'DELETE'
-        }
-      )
+          method: "DELETE",
+        },
+      );
       if (response.success) {
-        currentGroup.value = response.data
+        currentGroup.value = response.data;
 
         const index = groups.value.findIndex(
-          group => group.id === Number(groupId)
-        )
+          (group) => group.id === Number(groupId),
+        );
 
         if (index !== -1) {
-          groups.value[index] = response.data
+          groups.value[index] = response.data;
         }
       }
-      return response
-    })
+      return response;
+    });
   }
 
   // leave a group
   async function leaveGroup(groupId: Id) {
     return execute(async () => {
-      const response = await api<MessageResponse>(
-        `/groups/${groupId}/leave`,
-        {
-          method: 'POST'
-        }
-      )
+      const response = await api<MessageResponse>(`/groups/${groupId}/leave`, {
+        method: "POST",
+      });
       if (response.success) {
-        groups.value = groups.value.filter(g => g.id !== Number(groupId))
+        groups.value = groups.value.filter((g) => g.id !== Number(groupId));
         if (currentGroup.value?.id === Number(groupId)) {
-          currentGroup.value = null
+          currentGroup.value = null;
         }
       }
-      return response
-    })
+      return response;
+    });
   }
 
   // update group details
   async function updateGroup(groupId: Id, data: UpdateGroupPayload) {
     return execute(async () => {
-      const response = await api<ApiResponse<Group>>(
-        `/groups/${groupId}`,
-        {
-          method: 'PUT',
-          body: data
-        }
-      )
+      const response = await api<ApiResponse<Group>>(`/groups/${groupId}`, {
+        method: "PUT",
+        body: data,
+      });
       if (response.success) {
-        currentGroup.value = response.data
+        currentGroup.value = response.data;
 
         const index = groups.value.findIndex(
-          group => group.id === Number(groupId)
-        )
+          (group) => group.id === Number(groupId),
+        );
 
         if (index !== -1) {
-          groups.value[index] = response.data
+          groups.value[index] = response.data;
         }
       }
-      return response
-    })
+      return response;
+    });
   }
 
   // utility function to handle loading state for async operations
-  async function execute<T>(
-    callback: () => Promise<T>
-  ): Promise<T> {
-    isLoading.value = true
+  async function execute<T>(callback: () => Promise<T>): Promise<T> {
+    isLoading.value = true;
 
     try {
-      return await callback()
+      return await callback();
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
@@ -190,6 +181,5 @@ export const useGroupStore = defineStore('group', () => {
     leaveGroup,
     updateGroup,
     deleteGroup,
-    execute
-  }
-})
+  };
+});

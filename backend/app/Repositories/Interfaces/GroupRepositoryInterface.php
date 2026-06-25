@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories\Interfaces;
+
 use App\Models\Group;
 use Illuminate\Support\Collection;
 
@@ -16,7 +17,7 @@ interface GroupRepositoryInterface
 
     public function update(int $id, array $data): Group;
 
-    public function delete(int $id): int;
+    public function delete(int $id): bool;
 
     public function addMember(
         int $groupId,

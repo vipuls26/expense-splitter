@@ -2,16 +2,16 @@
 
 namespace App\Providers;
 
+use App\Repositories\ExpenseRepository;
+use App\Repositories\GroupRepository;
+use App\Repositories\Interfaces\ExpenseRepositoryInterface;
+use App\Repositories\Interfaces\GroupRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
-use App\Services\Interfaces\AuthServiceInterface;
 use App\Services\AuthService;
-use App\Repositories\Interfaces\GroupRepositoryInterface;
-use App\Repositories\GroupRepository;
-use App\Services\Interfaces\GroupServiceInterface;
 use App\Services\GroupService;
-use App\Repositories\Interfaces\ExpenseRepositoryInterface;
-use App\Repositories\ExpenseRepository; 
+use App\Services\Interfaces\AuthServiceInterface;
+use App\Services\Interfaces\GroupServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

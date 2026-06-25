@@ -1,59 +1,72 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { useApi } from '~/composables/useApi'
+import { useApi } from "~/composables/useApi";
+import type { Expense, CreateExpensePayload } from "~/types/expense";
+import type { ApiResponse, MessageResponse } from "~/types/api";
+import type { Id } from "~/types/common";
 
-export const useExpenseStore = defineStore('expense', () => {
-  const expenses = ref<any[]>([])
-  const isLoading = ref(false)
-  const api = useApi()
+export const useExpenseStore = defineStore("expense", () => {
+  const expenses = ref<Expense[]>([]);
+  const isLoading = ref(false);
+  const api = useApi();
 
-  async function fetchGroupExpenses(groupId: number | string) {
-    isLoading.value = true
-    try {
-      const response: any = await api(`/groups/${groupId}/expenses`, { method: 'GET' })
+  // retrieve all expenses for a specific group
+  async function fetchGroupExpenses(groupId: Id) {
+    return execute(async () => {
+      const response = await api<ApiResponse<Expense[]>>(
+        `/groups/${groupId}/expenses`,
+      );
+
       if (response.success) {
-        expenses.value = response.data
+        expenses.value = response.data;
       }
-    } catch (err) {
-      console.error('Failed to fetch expenses', err)
-      throw err
-    } finally {
-      isLoading.value = false
-    }
+
+      return response;
+    });
   }
 
-  async function addExpense(groupId: number | string, data: any) {
-    isLoading.value = true
-    try {
-      const response: any = await api(`/groups/${groupId}/expenses`, {
-        method: 'POST',
-        body: data
-      })
+  // create a new expense with splits
+  async function addExpense(groupId: Id, data: CreateExpensePayload) {
+    return execute(async () => {
+      const response = await api<ApiResponse<Expense>>(
+        `/groups/${groupId}/expenses`,
+        {
+          method: "POST",
+          body: data,
+        },
+      );
+
       if (response.success) {
-        expenses.value.unshift(response.data) // Add to top of list
+        expenses.value.unshift(response.data);
       }
-      return response
-    } catch (err: any) {
-      console.error('Failed to add expense', err)
-      throw err
-    } finally {
-      isLoading.value = false
-    }
+
+      return response;
+    });
   }
 
-  async function deleteExpense(expenseId: number | string) {
-    isLoading.value = true
-    try {
-      const response: any = await api(`/expenses/${expenseId}`, { method: 'DELETE' })
+  // remove an expense by its id
+  async function deleteExpense(expenseId: Id) {
+    return execute(async () => {
+      const response = await api<MessageResponse>(`/expenses/${expenseId}`, {
+        method: "DELETE",
+      });
+
       if (response.success) {
-        expenses.value = expenses.value.filter(e => e.id !== Number(expenseId))
+        expenses.value = expenses.value.filter(
+          (expense) => expense.id !== Number(expenseId),
+        );
       }
-      return response
-    } catch (err: any) {
-      console.error('Failed to delete expense', err)
-      throw err
+
+      return response;
+    });
+  }
+
+  // run an async task while managing loading state
+  async function execute<T>(callback: () => Promise<T>): Promise<T> {
+    isLoading.value = true;
+
+    try {
+      return await callback();
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
@@ -62,6 +75,6 @@ export const useExpenseStore = defineStore('expense', () => {
     isLoading,
     fetchGroupExpenses,
     addExpense,
-    deleteExpense
-  }
-})
+    deleteExpense,
+  };
+});

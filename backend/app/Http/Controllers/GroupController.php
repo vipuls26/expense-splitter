@@ -9,25 +9,24 @@ use App\Http\Resources\GroupResource;
 use App\Services\GroupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
-    // Inject the group service to handle all group business logic
+    // inject group service to handle logic
     public function __construct(private GroupService $groupService) {}
 
-    // Return all groups the logged-in user is part of
+    // list all groups the user belongs to
     public function index(): JsonResponse
     {
         $groups = $this->groupService->getUserGroups(Auth::id());
-        
+
         return response()->json([
             'success' => true,
             'data' => GroupResource::collection($groups),
         ]);
     }
 
-    // Create a new group with the logged-in user as the owner
+    // create a new group and assign owner
     public function store(StoreGroupRequest $request): JsonResponse
     {
         $group = $this->groupService->createGroup(
@@ -42,7 +41,7 @@ class GroupController extends Controller
         ], 201);
     }
 
-    // Get details of a single group by its ID
+    // get details of a specific group
     public function show(int $id): JsonResponse
     {
         $group = $this->groupService->getGroupById(
@@ -56,7 +55,7 @@ class GroupController extends Controller
         ]);
     }
 
-    // Update the name or details of a group
+    // update group details
     public function update(
         UpdateGroupRequest $request,
         int $id
@@ -74,7 +73,7 @@ class GroupController extends Controller
         ]);
     }
 
-    // Permanently delete a group — only the owner can do this
+    // permanently delete a group
     public function destroy(int $id): JsonResponse
     {
         $this->groupService->deleteGroup(
@@ -88,7 +87,7 @@ class GroupController extends Controller
         ]);
     }
 
-    // Add a new member to a group using their phone number
+    // add a new member via phone number
     public function addMember(
         AddGroupMemberRequest $request,
         int $id
@@ -106,7 +105,7 @@ class GroupController extends Controller
         ]);
     }
 
-    // Remove a specific member from the group
+    // remove a member from the group
     public function removeMember(
         int $id,
         int $memberId
@@ -124,7 +123,7 @@ class GroupController extends Controller
         ]);
     }
 
-    // Let the logged-in user exit a group they are part of
+    // allow the user to exit a group
     public function leave(int $id): JsonResponse
     {
         $this->groupService->leaveGroup(

@@ -2,32 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Services\BalanceService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    // inject balance service to calculate user stats
     public function __construct(
         private BalanceService $balanceService
     ) {}
 
-    public function index(Request $request)
+    // retrieve global dashboard stats for user
+    public function index(Request $request): JsonResponse
     {
-        try {
-            $userId = $request->user()->id;
-            $stats = $this->balanceService->getUserGlobalBalances($userId);
-
-            return response()->json([
-                'success' => true,
-                'data' => $stats
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to fetch dashboard stats',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => $this->balanceService->getUserGlobalBalances(
+                $request->user()->id
+            ),
+        ]);
     }
 }

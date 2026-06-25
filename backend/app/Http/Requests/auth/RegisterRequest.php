@@ -50,7 +50,7 @@ class RegisterRequest extends FormRequest
 
             // phone
             'phone_no.required' => 'Phone no is required',
-            'phone_no.digits' => 'Phone no should not more than 10 digits'
+            'phone_no.digits' => 'Phone no should not more than 10 digits',
         ];
     }
 }

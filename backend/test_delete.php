@@ -1,25 +1,32 @@
 <?php
+
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\User;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+
 require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$kernel = $app->make(Kernel::class);
 
-$user = App\Models\User::first();
+$user = User::first();
 Auth::login($user);
 
-$group = App\Models\Group::create([
+$group = Group::create([
     'name' => 'Curl Test Group',
-    'created_by' => $user->id
+    'created_by' => $user->id,
 ]);
-App\Models\GroupMember::create([
+GroupMember::create([
     'group_id' => $group->id,
     'user_id' => $user->id,
-    'role' => 'owner'
+    'role' => 'owner',
 ]);
 
-echo "Created Group ID: " . $group->id . "\n";
+echo 'Created Group ID: '.$group->id."\n";
 
-$request = Illuminate\Http\Request::create('/api/groups/' . $group->id, 'DELETE');
+$request = Request::create('/api/groups/'.$group->id, 'DELETE');
 $request->headers->set('Accept', 'application/json');
 $response = $kernel->handle($request);
-echo "Response Status: " . $response->getStatusCode() . "\n";
-echo "Response Body: " . $response->getContent() . "\n";
+echo 'Response Status: '.$response->getStatusCode()."\n";
+echo 'Response Body: '.$response->getContent()."\n";

@@ -1,16 +1,28 @@
 <template>
   <section
-    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 phone-lg:p-6 tablet:p-8 shadow-sm transition-colors">
-
+    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 phone-lg:p-6 tablet:p-8 shadow-sm transition-colors"
+  >
     <div v-if="isLoading" class="flex justify-center py-8">
       <i class="pi pi-spin pi-spinner text-2xl text-slate-400"></i>
     </div>
 
-    <div v-else-if="groups.length === 0"
-      class="py-10 phone-lg:py-12 text-center bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl">
-      <i class="pi pi-users text-2xl phone-lg:text-3xl text-slate-400 dark:text-slate-500 mb-3"></i>
-      <h3 class="text-base phone-lg:text-lg font-medium text-slate-900 dark:text-slate-100 mb-1">No groups yet</h3>
-      <p class="text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mb-4">Create a group to start splitting expenses.</p>
+    <div
+      v-else-if="groups.length === 0"
+      class="py-10 phone-lg:py-12 text-center bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl"
+    >
+      <i
+        class="pi pi-users text-2xl phone-lg:text-3xl text-slate-400 dark:text-slate-500 mb-3"
+      ></i>
+      <h3
+        class="text-base phone-lg:text-lg font-medium text-slate-900 dark:text-slate-100 mb-1"
+      >
+        No groups yet
+      </h3>
+      <p
+        class="text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mb-4"
+      >
+        Create a group to start splitting expenses.
+      </p>
       <div class="flex justify-center">
         <NuxtLink to="/groups/create">
           <BaseButton variant="solid" size="md">
@@ -20,9 +32,15 @@
       </div>
     </div>
 
-    <div v-else class="grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-3 gap-4">
-      <NuxtLink v-for="group in groups" :key="group.id" :to="`/groups/${group.id}`"
-        >
+    <div
+      v-else
+      class="grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-3 gap-4"
+    >
+      <NuxtLink
+        v-for="group in groups"
+        :key="group.id"
+        :to="`/groups/${group.id}`"
+      >
         <GroupCard :group="group" />
       </NuxtLink>
     </div>
@@ -30,15 +48,12 @@
 </template>
 
 <script setup lang="ts">
-
-import type { Group } from '~/types/group'
-import GroupCard from '~/components/group/GroupCard.vue'
-import BaseButton from '~/components/ui/BaseButton.vue'
+import type { Group } from "~/types/group";
+import GroupCard from "~/components/group/GroupCard.vue";
+import BaseButton from "~/components/ui/BaseButton.vue";
 
 defineProps<{
-  groups: Group[]
-  isLoading: boolean
-}>()
-
-
+  groups: Group[];
+  isLoading: boolean;
+}>();
 </script>

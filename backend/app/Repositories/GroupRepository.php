@@ -34,16 +34,18 @@ class GroupRepository implements GroupRepositoryInterface
 
     public function update(int $id, array $data): Group
     {
-        $group = Group::findOrFail($id);
+        $group = $this->findById($id);
 
         $group->update($data);
 
         return $group;
     }
 
-    public function delete(int $id): int
+    public function delete(int $id): bool
     {
-        return Group::destroy($id);
+        $group = $this->findById($id);
+
+        return $group->delete();
     }
 
     public function addMember(
@@ -51,7 +53,7 @@ class GroupRepository implements GroupRepositoryInterface
         int $userId,
         string $role = 'member'
     ): Group {
-        $group = Group::findOrFail($groupId);
+        $group = $this->findById($groupId);
 
         if (! $group->members()->where('users.id', $userId)->exists()) {
             $group->members()->attach($userId, [
@@ -66,8 +68,7 @@ class GroupRepository implements GroupRepositoryInterface
         int $groupId,
         int $userId
     ): Group {
-        $group = Group::findOrFail($groupId);
-
+        $group = $this->findById($groupId);
         $group->members()->detach($userId);
 
         return $group->load('members');

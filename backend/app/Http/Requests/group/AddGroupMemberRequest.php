@@ -23,7 +23,7 @@ class AddGroupMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_no' => 'required|string'
+            'phone_no' => 'required|string',
         ];
     }
 

@@ -24,7 +24,7 @@ class StoreGroupRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255|min:3',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ];
     }
 
@@ -35,7 +35,7 @@ class StoreGroupRequest extends FormRequest
             'name.string' => 'Group name must be a string.',
             'name.max' => 'Group name must not exceed 255 characters.',
             'name.min' => 'Group name must be at least 3 characters long.',
-            
+
             'description.string' => 'Description must be a string.',
         ];
     }

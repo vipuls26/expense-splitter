@@ -17,8 +17,13 @@ return new class extends Migration
             $table->foreignId('paid_by')->constrained('users')->cascadeOnDelete();
             $table->decimal('amount', 10, 2);
             $table->string('description');
+            $table->boolean('is_settlement')->default(false);
             $table->timestamp('date')->useCurrent();
             $table->timestamps();
+
+            // indexing for performance optimization
+            $table->index('date');
+            $table->index('is_settlement');
         });
     }
 

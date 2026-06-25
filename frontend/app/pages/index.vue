@@ -1,44 +1,43 @@
 <template>
   <div v-if="authStore.isLoggedIn" class="space-y-10 py-8 px-4 tablet:px-6">
-
-    <!-- Header -->
-    <header class="flex flex-col tablet:flex-row tablet:items-end justify-between gap-4">
+    <header
+      class="flex flex-col tablet:flex-row tablet:items-end justify-between gap-4"
+    >
       <div>
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">Dashboard</h1>
-        <p class="text-slate-500 dark:text-slate-400">Welcome back, {{ authStore.user?.name?.split(' ')[0] || 'User' }}</p>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+          Dashboard
+        </h1>
+        <p class="text-slate-500 dark:text-slate-400">
+          Welcome back, {{ authStore.user?.name?.split(" ")[0] || "User" }}
+        </p>
       </div>
     </header>
 
     <DashboardStats />
 
     <GroupList :groups="groupStore.groups" :is-loading="groupStore.isLoading" />
-
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/stores/auth'
-import { useGroupStore } from '~/stores/group'
-import { useDashboardStore } from '~/stores/dashboard'
-import DashboardStats from '~/components/dashboard/DashboardStats.vue'
-import GroupList from '~/components/group/GroupList.vue'
+import { useAuthStore } from "~/stores/auth";
+import { useGroupStore } from "~/stores/group";
+import { useDashboardStore } from "~/stores/dashboard";
+import DashboardStats from "~/components/dashboard/DashboardStats.vue";
+import GroupList from "~/components/group/GroupList.vue";
 
 definePageMeta({
-  middleware: ['auth'],
-  layout: 'dashboard'
-})
+  middleware: ["auth"],
+  layout: "dashboard",
+});
 
-const authStore = useAuthStore()
-const groupStore = useGroupStore()
-const dashboardStore = useDashboardStore()
-const router = useRouter()
+const authStore = useAuthStore();
+const groupStore = useGroupStore();
+const dashboardStore = useDashboardStore();
 
-onMounted(() => {
+onMounted(async () => {
   if (authStore.isLoggedIn) {
-    groupStore.fetchGroups()
-    dashboardStore.fetchStats()
+    await Promise.all([groupStore.fetchGroups(), dashboardStore.fetchStats()]);
   }
-})
+});
 </script>

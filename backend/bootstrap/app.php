@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,11 +30,11 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             $statusCode = match (true) {
-                $e instanceof AuthorizationException                => 403,
-                $e instanceof ModelNotFoundException               => 404,
-                $e instanceof BadRequestException                  => 400,
-                $e instanceof \Exception && in_array($e->getCode(), [400, 403, 404]) => $e->getCode(),
-                default                                            => 500,
+                $e instanceof AuthenticationException => 401,
+                $e instanceof AuthorizationException => 403,
+                $e instanceof ModelNotFoundException => 404,
+                $e instanceof BadRequestException => 400,
+                default => 500,
             };
 
             return response()->json([

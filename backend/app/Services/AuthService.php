@@ -10,9 +10,7 @@ use Illuminate\Validation\ValidationException;
 class AuthService
 {
     // Inject the UserRepositoryInterface via the constructor
-    public function __construct(private UserRepositoryInterface $userRepository)
-    {
-    }
+    public function __construct(private UserRepositoryInterface $userRepository) {}
 
     // Handle user registration and issue a token
     public function register(array $data): array

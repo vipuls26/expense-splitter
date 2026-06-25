@@ -13,10 +13,21 @@ return new class extends Migration
     {
         Schema::create('expense_splits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('expense_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('expense_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
             $table->decimal('amount_owed', 10, 2);
+            $table->checkdate('amount_owed', '>=', 0);
+
             $table->timestamps();
+
+            // unique constraint to ensure that a user can only have one split per expense
+            $table->unique(['expense_id', 'user_id']);
         });
     }
 

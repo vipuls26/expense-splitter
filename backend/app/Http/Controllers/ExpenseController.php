@@ -2,60 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\expense\StoreExpenseRequest;
+use App\Http\Resources\ExpenseResource;
 use App\Services\ExpenseService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    public function __construct(private ExpenseService $expenseService)
-    {}
+    // inject expense service for logic handling
+    public function __construct(private ExpenseService $expenseService) {}
 
-    public function index(Request $request, $groupId)
-    {
-        try {
-            $expenses = $this->expenseService->getGroupExpenses($groupId, $request->user()->id);
-            return response()->json([
-                'message' => 'Expenses retrieved successfully',
-                'data' => $expenses,
-                'success' => true,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage(), 'success' => false], 400);
-        }
+    // list all expenses within a group
+    public function index(
+        Request $request,
+        int $groupId
+    ): JsonResponse {
+
+        $expenses = $this->expenseService->getGroupExpenses(
+            $groupId,
+            $request->user()->id
+        );
+
+        return response()->json([
+            'message' => 'Expenses retrieved successfully',
+            'data' => ExpenseResource::collection($expenses),  // return multiple model
+            'success' => true,
+        ], 200);
     }
 
-    public function store(Request $request, $groupId)
+    // create a new expense with splits
+    public function store(StoreExpenseRequest $request, int $groupId): JsonResponse
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:0.01',
-            'description' => 'required|string|max:255',
-            'paid_by' => 'nullable|exists:users,id',
-            'date' => 'nullable|date',
-            'splits' => 'required|array|min:1',
-            'splits.*.user_id' => 'required|exists:users,id',
-            'splits.*.amount_owed' => 'required|numeric|min:0',
-        ]);
 
-        try {
-            $expense = $this->expenseService->createExpense($groupId, $request->all(), $request->user()->id);
-            return response()->json([
-                'message' => 'Expense added successfully',
-                'data' => $expense,
-                'success' => true,
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage(), 'success' => false], 400);
-        }
+        $expense = $this->expenseService->createExpense(
+            $groupId,
+            $request->validated(),
+            $request->user()->id
+        );
+
+        return response()->json([
+            'message' => 'Expense added successfully',
+            'data' => new ExpenseResource($expense),  // return single model
+            'success' => true,
+        ], 201);
     }
 
-    public function destroy(Request $request, $id)
+    // permanently remove an expense
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        try {
-            $this->expenseService->deleteExpense($id, $request->user()->id);
-            return response()->json(['message' => 'Expense deleted successfully', 'success' => true], 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage(), 'success' => false], 400);
-        }
+        $this->expenseService->deleteExpense(
+            $id,
+            $request->user()->id
+        );
+
+        return response()->json([
+            'message' => 'Expense deleted successfully',
+            'success' => true,
+        ], 200);
     }
 }

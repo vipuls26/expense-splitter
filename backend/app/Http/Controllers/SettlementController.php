@@ -2,77 +2,52 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\settle\SettleUpRequest;
+use App\Http\Resources\BalanceResource;
+use App\Http\Resources\ExpenseResource;
+use App\Http\Resources\SettlementResource;
 use App\Services\BalanceService;
 use App\Services\ExpenseService;
-use Illuminate\Http\Request;
 
 class SettlementController extends Controller
 {
+    // inject services to calculate balances and handle settlements
     public function __construct(
         private BalanceService $balanceService,
         private ExpenseService $expenseService
     ) {}
 
-    public function getBalances(Request $request, $groupId)
+    // get individual user balances and settlement graph
+    public function getBalances(int $groupId)
     {
-        try {
-            $balances = $this->balanceService->calculateBalances($groupId);
-            $settlements = $this->balanceService->calculateSettlements($groupId);
+        $balances = $this->balanceService->calculateBalances($groupId);
+        $settlements = $this->balanceService->calculateSettlements($groupId);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'balances' => array_values($balances),
-                    'settlements' => $settlements,
-                ]
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'balances' => BalanceResource::collection(array_values($balances)),
+                'settlements' => SettlementResource::collection($settlements),
+            ],
+        ]);
     }
 
-    public function settleUp(Request $request, $groupId)
+    // create an expense payment to clear debt
+    public function settleUp(SettleUpRequest $request, int $groupId)
     {
-        $request->validate([
-            'to_user_id' => 'required|exists:users,id',
-            'amount' => 'required|numeric|min:0.01',
-        ]);
+        $validated = $request->validated();
 
-        try {
-            $userId = $request->user()->id; // This is the person paying (debtor)
-            $toUserId = $request->input('to_user_id'); // This is the person receiving (creditor)
-            $amount = $request->input('amount');
+        $expense = $this->expenseService->createSettlement(
+            $groupId,
+            $request->user()->id,
+            $validated['to_user_id'],
+            $validated['amount']
+        );
 
-            // Record a settlement as an Expense where "userId" pays, and "toUserId" owes exactly that amount
-            $data = [
-                'paid_by' => $userId,
-                'amount' => $amount,
-                'description' => 'Settlement Payment',
-                'is_settlement' => true,
-                'splits' => [
-                    [
-                        'user_id' => $toUserId,
-                        'amount_owed' => $amount,
-                    ]
-                ]
-            ];
-
-            $expense = $this->expenseService->createExpense($groupId, $data, $userId);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Settlement recorded successfully',
-                'data' => $expense,
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Settlement recorded successfully',
+            'data' => new ExpenseResource($expense),
+        ], 201);
     }
 }
