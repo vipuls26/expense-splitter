@@ -22,8 +22,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->enum('role', ['owner', 'member'])
-                ->default('member');
+            $table->enum('role', ['owner', 'member'])->default('member');
 
             $table->timestamps();
 

@@ -1,8 +1,11 @@
-// types/user.ts
+import type { Id } from "./common";
 
-export interface User {
-    id: number
-    name: string
-    email: string
-    phone_no: string
+export interface BaseUser {
+  id: Id;
+  name: string;
+  phone_no: string;
+}
+
+export interface User extends BaseUser {
+  email: string;
 }

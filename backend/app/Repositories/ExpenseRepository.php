@@ -3,44 +3,43 @@
 namespace App\Repositories;
 
 use App\Models\Expense;
-use App\Models\ExpenseSplit;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ExpenseRepository implements ExpenseRepositoryInterface
 {
-    public function create(array $expenseData, array $splitsData): Expense
-    {
-        return DB::transaction(function () use ($expenseData, $splitsData) {
+    public function create(
+        array $expenseData,
+        array $expenseSplits
+    ): Expense {
+        return DB::transaction(function () use ($expenseData, $expenseSplits) {
             $expense = Expense::create($expenseData);
 
-            foreach ($splitsData as $split) {
-                $expense->splits()->create([
-                    'user_id' => $split['user_id'],
-                    'amount_owed' => $split['amount_owed'],
-                ]);
-            }
+            $expense->splits()->createMany($expenseSplits);
 
-            return $expense->load('splits.user', 'payer');
+            return $expense->load(self::relationsToLoad);
         });
     }
 
     public function getExpensesForGroup(int $groupId): Collection
     {
         return Expense::where('group_id', $groupId)
-            ->with(['payer', 'splits.user'])
-            ->orderBy('date', 'desc')
+            ->with(self::relationsToLoad)
+            ->latest('date')
             ->get();
     }
 
-    public function findById(int $expenseId): ?Expense
+    public function findById(int $id): ?Expense
     {
-        return Expense::with(['payer', 'splits.user'])->find($expenseId);
+        return Expense::with(self::relationsToLoad)
+            ->find($id);
     }
 
     public function delete(Expense $expense): bool
     {
         return $expense->delete();
     }
+
+    private const relationsToLoad = ['payer', 'splits.user'];
 }

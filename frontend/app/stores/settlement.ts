@@ -1,45 +1,61 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { useApi } from '~/composables/useApi'
+import { useApi } from "~/composables/useApi";
+import type { ApiResponse } from "~/types/api";
+import type { Id } from "~/types/common";
 
-export const useSettlementStore = defineStore('settlement', () => {
-  const balances = ref<any[]>([])
-  const settlements = ref<any[]>([])
-  const isLoading = ref(false)
-  const api = useApi()
+import type {
+  Balance,
+  Settlement,
+  SettlementResponse,
+} from "~/types/settlement";
 
-  async function fetchBalances(groupId: number | string) {
-    isLoading.value = true
-    try {
-      const response: any = await api(`/groups/${groupId}/balances`, { method: 'GET' })
+export const useSettlementStore = defineStore("settlement", () => {
+  const balances = ref<Balance[]>([]);
+  const settlements = ref<Settlement[]>([]);
+
+  const isLoading = ref(false);
+  const api = useApi();
+
+  // fetch calculated balances and settlements for a group
+  async function fetchBalances(groupId: Id) {
+    return execute(async () => {
+      const response = await api<ApiResponse<SettlementResponse>>(
+        `/groups/${groupId}/balances`,
+      );
+
       if (response.success) {
-        balances.value = response.data.balances
-        settlements.value = response.data.settlements
+        balances.value = response.data.balances;
+        settlements.value = response.data.settlements;
       }
-    } catch (err) {
-      console.error('Failed to fetch balances', err)
-    } finally {
-      isLoading.value = false
-    }
+
+      return response;
+    });
   }
 
-  async function settleUp(groupId: number | string, toUserId: number, amount: number) {
-    isLoading.value = true
-    try {
-      const response: any = await api(`/groups/${groupId}/settle`, {
-        method: 'POST',
-        body: { to_user_id: toUserId, amount }
-      })
+  // record a payment to settle debts between two users
+  async function settleUp(groupId: Id, toUserId: Id, amount: number) {
+    return execute(async () => {
+      const response = await api<ApiResponse<Settlement[]>>(
+        `/groups/${groupId}/settle`,
+        {
+          method: "POST",
+          body: { to_user_id: toUserId, amount },
+        },
+      );
       if (response.success) {
-        // Refresh balances after a settlement
-        await fetchBalances(groupId)
+        await fetchBalances(groupId);
       }
-      return response
-    } catch (err: any) {
-      console.error('Failed to settle up', err)
-      throw err
+      return response;
+    });
+  }
+
+  // run an async task while managing loading state
+  async function execute<T>(callback: () => Promise<T>): Promise<T> {
+    isLoading.value = true;
+
+    try {
+      return await callback();
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
@@ -48,6 +64,6 @@ export const useSettlementStore = defineStore('settlement', () => {
     settlements,
     isLoading,
     fetchBalances,
-    settleUp
-  }
-})
+    settleUp,
+  };
+});

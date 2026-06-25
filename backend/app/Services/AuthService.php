@@ -4,16 +4,13 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
-use App\Services\Interfaces\AuthServiceInterface;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class AuthService implements AuthServiceInterface
+class AuthService
 {
     // Inject the UserRepositoryInterface via the constructor
-    public function __construct(private UserRepositoryInterface $userRepository)
-    {
-    }
+    public function __construct(private UserRepositoryInterface $userRepository) {}
 
     // Handle user registration and issue a token
     public function register(array $data): array

@@ -2,14 +2,31 @@
 
 namespace App\Repositories\Interfaces;
 
+use App\Models\Group;
+use Illuminate\Support\Collection;
+
 interface GroupRepositoryInterface
 {
-    public function getAllGroups();
-    public function getUserGroups($userId);
-    public function findById($id);
-    public function create(array $data);
-    public function update($id, array $data);
-    public function delete($id);
-    public function addMember($groupId, $userId, $role);
-    public function removeMember($groupId, $userId);
+    public function getAllGroups(): Collection;
+
+    public function getUserGroups(int $userId): Collection;
+
+    public function findById(int $id): Group;
+
+    public function create(array $data): Group;
+
+    public function update(int $id, array $data): Group;
+
+    public function delete(int $id): bool;
+
+    public function addMember(
+        int $groupId,
+        int $userId,
+        string $role = 'member'
+    ): Group;
+
+    public function removeMember(
+        int $groupId,
+        int $userId
+    ): Group;
 }

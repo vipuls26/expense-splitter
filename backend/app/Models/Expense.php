@@ -2,30 +2,34 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Fillable(['group_id', 'paid_by', 'amount', 'description', 'is_settlement', 'date'])]
 class Expense extends Model
 {
-    protected $fillable = [
-        'group_id',
-        'paid_by',
-        'amount',
-        'description',
-        'is_settlement',
-        'date',
-    ];
+    public function casts(): array
+    {
+        return [
+            'amount' => 'float',
+            'is_settlement' => 'boolean',
+            'date' => 'date',
+        ];
+    }
 
-    public function group()
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
-    public function payer()
+    public function payer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'paid_by');
     }
 
-    public function splits()
+    public function splits(): HasMany
     {
         return $this->hasMany(ExpenseSplit::class);
     }

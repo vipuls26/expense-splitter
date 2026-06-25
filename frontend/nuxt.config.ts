@@ -14,8 +14,12 @@ export default defineNuxtConfig({
   ],
   // register nuxt module 
   modules: [
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    '@nuxtjs/color-mode'
   ],
+  colorMode: {
+    classSuffix: ''
+  },
   // store configuration values
   runtimeConfig: {
     public: {

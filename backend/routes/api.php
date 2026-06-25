@@ -1,20 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\GroupController;
-use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\SettlementController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-    
+
     // Global Dashboard
-    Route::get('/dashboard', [\App\Http\Controllers\Api\DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Group Routes
     Route::apiResource('groups', GroupController::class);
@@ -28,8 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/groups/{id}/expenses', [ExpenseController::class, 'store']);
 
     // Settlements
-    Route::get('/groups/{id}/balances', [\App\Http\Controllers\Api\SettlementController::class, 'getBalances']);
-    Route::post('/groups/{id}/settle', [\App\Http\Controllers\Api\SettlementController::class, 'settleUp']);
+    Route::get('/groups/{id}/balances', [SettlementController::class, 'getBalances']);
+    Route::post('/groups/{id}/settle', [SettlementController::class, 'settleUp']);
 });
 
 Route::middleware('auth:sanctum')->prefix('/expenses')->group(function () {
