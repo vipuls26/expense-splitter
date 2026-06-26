@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Models\Expense;
 use App\Models\Group;
+use App\Models\User;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
-use Exception;
+use App\Services\WalletService;
+use InvalidArgumentException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,7 +17,8 @@ class ExpenseService
 {
     public function __construct(
         private ExpenseRepositoryInterface $expenseRepository,
-        private GroupRepositoryInterface $groupRepository
+        private GroupRepositoryInterface $groupRepository,
+        private WalletService $walletService
     ) {}
 
     public function createExpense(
@@ -45,6 +48,12 @@ class ExpenseService
             $userId
         );
 
+        if (empty($data['is_settlement'])) {
+            $payerId = $data['paid_by'] ?? $userId;
+            $payer = User::findOrFail($payerId);
+            $this->walletService->payExpense($payer, $amount, 'Paid for expense: ' . $data['description']);
+        }
+
         return $this->expenseRepository->create(
             $expenseData,
             $splits
@@ -65,6 +74,10 @@ class ExpenseService
                 ],
             ],
         ];
+
+        $payer = User::findOrFail($userId);
+        $payee = User::findOrFail($toUserId);
+        $this->walletService->processSettlement($payer, $payee, $amount, 'Settlement payment');
 
         return $this->createExpense($groupId, $data, $userId);
     }
@@ -93,6 +106,16 @@ class ExpenseService
         }
 
         $this->authorizeExpenseDeletion($expense, $userId);
+
+        if ($expense->is_settlement) {
+            $payer = User::findOrFail($expense->paid_by);
+            $payee = User::findOrFail($expense->splits->first()->user_id);
+            // Reverse settlement: payee pays payer
+            $this->walletService->processSettlement($payee, $payer, $expense->amount, 'Reversed settlement');
+        } else {
+            $payer = User::findOrFail($expense->paid_by);
+            $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: ' . $expense->description);
+        }
 
         return $this->expenseRepository->delete($expense);
     }
@@ -126,14 +149,14 @@ class ExpenseService
         );
 
         if (abs($amount - $totalSplit) > 0.01) {
-            throw new Exception(
+            throw new InvalidArgumentException(
                 'The sum of splits must exactly equal the total expense amount.'
             );
         }
 
         foreach ($splits as $split) {
             if (! $group->members->contains('id', $split['user_id'])) {
-                throw new Exception(
+                throw new InvalidArgumentException(
                     'Cannot split expense with non-members.'
                 );
             }
@@ -171,6 +194,7 @@ class ExpenseService
             'paid_by' => $data['paid_by'] ?? $userId,
             'amount' => $amount,
             'description' => $data['description'],
+            'is_settlement' => $data['is_settlement'] ?? false,
             'date' => $data['date'] ?? now(),
         ];
     }

@@ -2,16 +2,17 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Observers\UserObserver;
 use App\Repositories\ExpenseRepository;
 use App\Repositories\GroupRepository;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\Interfaces\WalletRepositoryInterface;
 use App\Repositories\UserRepository;
+use App\Repositories\WalletRepository;
 use App\Services\AuthService;
-use App\Services\GroupService;
-use App\Services\Interfaces\AuthServiceInterface;
-use App\Services\Interfaces\GroupServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,7 +28,6 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
-            AuthServiceInterface::class,
             AuthService::class
         );
 
@@ -36,14 +36,16 @@ class AppServiceProvider extends ServiceProvider
             GroupRepository::class
         );
 
-        $this->app->bind(
-            GroupServiceInterface::class,
-            GroupService::class
-        );
+        // Removed GroupServiceInterface binding as it does not exist
 
         $this->app->bind(
             ExpenseRepositoryInterface::class,
             ExpenseRepository::class
+        );
+
+        $this->app->bind(
+            WalletRepositoryInterface::class,
+            WalletRepository::class
         );
     }
 
@@ -52,6 +54,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        User::observe(UserObserver::class);
     }
 }

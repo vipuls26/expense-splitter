@@ -1,7 +1,7 @@
 <template>
   <section class="grid grid-cols-1 tablet:grid-cols-3 gap-4">
     <div
-      class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
+      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
     >
       <div
         v-if="dashboardStore.isLoading"
@@ -32,7 +32,7 @@
     </div>
 
     <div
-      class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
+      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
     >
       <div
         v-if="dashboardStore.isLoading"
@@ -45,13 +45,13 @@
       <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
         You Owe
       </p>
-      <p class="text-3xl font-bold text-red-600">
+      <p class="text-3xl font-bold text-red-600 dark:text-red-400">
         ₹{{ dashboardStore.stats.you_owe.toFixed(2) }}
       </p>
     </div>
 
     <div
-      class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
+      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
     >
       <div
         v-if="dashboardStore.isLoading"
@@ -75,4 +75,5 @@
 import { useDashboardStore } from "~/stores/dashboard";
 
 const dashboardStore = useDashboardStore();
+const TotalBalance = useWalletStore();
 </script>

@@ -1,25 +1,25 @@
 <template>
-  <!-- Mobile Sidebar Overlay -->
+  
   <div
     v-if="isOpen"
     class="fixed inset-0 bg-slate-900/50 z-40 laptop:hidden"
     @click="$emit('close')"
   ></div>
 
-  <!-- Sidebar Container -->
+
   <aside
     :class="[
-      'fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out laptop:translate-x-0',
+      'fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out laptop:translate-x-0',
       isOpen ? 'translate-x-0' : '-translate-x-full',
     ]"
   >
-    <!-- Logo -->
+    
     <div
-      class="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800"
+      class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700"
     >
       <NuxtLink to="/" class="flex items-center gap-2" @click="$emit('close')">
         <div
-          class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center shadow-sm"
+          class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-sm"
         >
           <i class="pi pi-wallet text-white text-sm"></i>
         </div>
@@ -30,7 +30,7 @@
       </NuxtLink>
     </div>
 
-    <!-- Navigation Links -->
+    
     <div class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
       <NuxtLink
         v-for="item in navigation"
@@ -44,7 +44,7 @@
               ? $route.path === '/'
               : $route.path.startsWith(item.href)
           )
-            ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100',
         ]"
       >
@@ -57,7 +57,7 @@
                 ? $route.path === '/'
                 : $route.path.startsWith(item.href)
             )
-              ? 'text-emerald-600 dark:text-emerald-400'
+              ? 'text-indigo-600 dark:text-indigo-400'
               : 'text-slate-400 dark:text-slate-500',
           ]"
         ></i>
@@ -65,8 +65,8 @@
       </NuxtLink>
     </div>
 
-    <!-- Bottom Settings / Profile -->
-    <div class="p-4 border-t border-slate-100 dark:border-slate-800">
+    
+    <div class="p-4 border-t border-slate-200 dark:border-slate-700">
       <div class="flex items-center gap-3 px-3 py-2">
         <div
           class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm"
@@ -105,6 +105,7 @@ const route = useRoute();
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: "pi-th-large" },
-  { name: "Groups", href: "/groups", icon: "pi-users" },
+  { name: "Group", href: "/group", icon: "pi-users" },
+  { name: "Wallet", href: '/wallet', icon: "pi-wallet"}
 ];
 </script>

@@ -11,22 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('expense_splits', function (Blueprint $table) {
+        Schema::create('wallets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('expense_id')
-                ->constrained()
-                ->cascadeOnDelete();
-
+            
             $table->foreignId('user_id')
+                ->unique()
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->decimal('amount_owed', 10, 2);
+            $table->decimal('balance', 12, 2)->default(0);
 
             $table->timestamps();
 
-            // unique constraint to ensure that a user can only have one split per expense
-            $table->unique(['expense_id', 'user_id']);
+            $table->index('balance');
         });
     }
 
@@ -35,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('expense_splits');
+        Schema::dropIfExists('wallets');
     }
 };

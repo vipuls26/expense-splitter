@@ -41,7 +41,7 @@ const groupStore = useGroupStore();
 const router = useRouter();
 
 function goToCreateGroup() {
-  router.push("/groups/create");
+  router.push("/group/create");
 }
 
 await groupStore.fetchGroups();

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors"
+    class="min-h-screen bg-slate-50 dark:bg-slate-900 flex transition-colors"
   >
     <!-- Sidebar -->
     <AppSidebar :is-open="isSidebarOpen" @close="isSidebarOpen = false" />
@@ -33,7 +33,7 @@ const route = useRoute();
 // Simple title logic based on route name/path
 const pageTitle = computed(() => {
   if (route.path === "/") return "Dashboard";
-  if (route.path.startsWith("/groups")) return "Groups";
+  if (route.path.startsWith("/group")) return "Groups";
   if (route.path.startsWith("/wallet")) return "Wallet";
   if (route.path.startsWith("/expenses")) return "Expenses";
   if (route.path.startsWith("/settlements")) return "Settlements";

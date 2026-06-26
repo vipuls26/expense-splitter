@@ -138,6 +138,7 @@
 import { useAuthStore } from "~/stores/auth";
 import { useSettlementStore } from "~/stores/settlement";
 import { useExpenseStore } from "~/stores/expense";
+import { useWalletStore } from "~/stores/wallet";
 import { useToast } from "~/composables/useToast";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseDialog from "~/components/ui/BaseDialog.vue";
@@ -151,6 +152,7 @@ const props = defineProps<{
 const authStore = useAuthStore();
 const settlementStore = useSettlementStore();
 const expenseStore = useExpenseStore();
+const walletStore = useWalletStore();
 const { addToast } = useToast();
 
 onMounted(() => settlementStore.fetchBalances(props.groupId));
@@ -202,6 +204,7 @@ async function executeSettle() {
 
       await settlementStore.fetchBalances(props.groupId);
       await expenseStore.fetchGroupExpenses(props.groupId);
+      await walletStore.fetchWallet();
     } else {
       addToast(response.message || "Failed to settle up", "error");
     }

@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 phone-lg:p-6 tablet:p-8 shadow-sm transition-colors"
+    class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 p-4 phone-lg:p-6 tablet:p-8 shadow-sm transition-colors"
   >
     <div v-if="isLoading" class="flex justify-center py-8">
       <i class="pi pi-spin pi-spinner text-2xl text-slate-400"></i>
@@ -24,7 +24,7 @@
         Create a group to start splitting expenses.
       </p>
       <div class="flex justify-center">
-        <NuxtLink to="/groups/create">
+        <NuxtLink to="/group/create">
           <BaseButton variant="solid" size="md">
             <i class="pi pi-plus mr-2"></i> New Group
           </BaseButton>
@@ -39,7 +39,7 @@
       <NuxtLink
         v-for="group in groups"
         :key="group.id"
-        :to="`/groups/${group.id}`"
+        :to="`/group/${group.id}`"
       >
         <GroupCard :group="group" />
       </NuxtLink>
