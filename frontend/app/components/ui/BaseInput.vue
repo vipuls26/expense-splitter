@@ -3,7 +3,8 @@
     <label
       :for="id"
       class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-      >{{ label }}</label
+      >{{ label
+      }}<span v-if="required" class="text-red-500 ml-1">*</span></label
     >
     <div class="relative">
       <span
@@ -15,9 +16,17 @@
         :id="id"
         :type="inputType"
         :required="required"
+        :min="min"
+        :max="max"
+        :step="step"
         :value="modelValue"
         @input="
           $emit('update:modelValue', ($event.target as HTMLInputElement).value)
+        "
+        @keydown="
+          type === 'number' && ['e', 'E', '+', '-'].includes($event.key)
+            ? $event.preventDefault()
+            : null
         "
         :class="[
           'w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 transition-colors outline-none bg-transparent dark:text-slate-100',
@@ -40,10 +49,13 @@
     </div>
     <p
       v-if="error"
-      class="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1"
+      :class="[
+        'text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5 z-10 w-full',
+        absoluteError ? 'absolute top-full left-0 mt-1.5' : 'mt-1.5',
+      ]"
     >
-      <i class="pi pi-exclamation-circle text-xs"></i>
-      {{ error }}
+      <i class="pi pi-exclamation-circle text-xs mt-[3px]"></i>
+      <span class="leading-tight">{{ error }}</span>
     </p>
   </div>
 </template>
@@ -55,18 +67,23 @@ const props = withDefaults(
   defineProps<{
     id: string;
     label: string;
-    modelValue: string;
+    modelValue: string | number | undefined;
     icon: string;
     type?: string;
     placeholder?: string;
     required?: boolean;
     error?: string;
+    min?: number | string;
+    max?: number | string;
+    step?: number | string;
+    absoluteError?: boolean;
   }>(),
   {
     type: "text",
     placeholder: "",
     required: false,
     error: "",
+    absoluteError: false,
   },
 );
 

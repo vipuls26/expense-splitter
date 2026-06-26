@@ -7,6 +7,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -29,11 +30,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            if ($e instanceof ValidationException) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
             $statusCode = match (true) {
                 $e instanceof AuthenticationException => 401,
                 $e instanceof AuthorizationException => 403,
                 $e instanceof ModelNotFoundException => 404,
                 $e instanceof BadRequestException => 400,
+                $e instanceof InvalidArgumentException => 400,
                 default => 500,
             };
 

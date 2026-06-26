@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 p-4 transition-colors"
+    class="min-h-screen flex items-center justify-center p-4 transition-colors"
   >
     <div class="max-w-sm w-full space-y-8">
       <div class="text-center">
@@ -47,7 +47,7 @@
 
         <BaseButton
           type="submit"
-          :is-loading="isLoading"
+          :is-loading="isSubmitting"
           icon="pi-sign-in"
           loading-text="Signing in..."
           block
@@ -76,37 +76,57 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import { useAuthStore } from "~/stores/auth";
 import { useToast } from "~/composables/useToast";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import * as z from "zod";
 
 definePageMeta({
   layout: "guest",
 });
 
-const email = ref("");
-const password = ref("");
+const loginSchema = toTypedSchema(
+  z.object({
+    email: z.string().min(1, "Email is required").email("Enter a valid email"),
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .min(8, "Password must be at least 8 characters long"),
+  }),
+);
+
+const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
+  validationSchema: loginSchema,
+  initialValues: {
+    email: "",
+    password: "",
+  },
+});
+
+const [email] = defineField("email");
+const [password] = defineField("password");
+
 const errorMsg = ref("");
-const errors = ref<Record<string, string>>({});
-const isLoading = ref(false);
 
 const router = useRouter();
 const authStore = useAuthStore();
 const api = useApi();
 const { addToast } = useToast();
 
-async function handleLogin() {
-  isLoading.value = true;
+// handle the login form submission
+const handleLogin = handleSubmit(async (values) => {
   errorMsg.value = "";
-  errors.value = {};
 
   try {
     const response: any = await api("/login", {
       method: "POST",
       body: {
-        email: email.value,
-        password: password.value,
+        email: values.email,
+        password: values.password,
       },
     });
 
     if (response.success) {
+      // save token and redirect on success
       authStore.setAuth(response.data.user, response.data.token);
       addToast("Login successful! Welcome back.", "success");
       router.push("/");
@@ -115,17 +135,19 @@ async function handleLogin() {
     }
   } catch (err: any) {
     if (err.response?.status === 422 && err.response?._data?.errors) {
+      // map backend validation errors to frontend inputs
       const apiErrors = err.response._data.errors;
+      const formErrors: Record<string, string> = {};
       for (const key in apiErrors) {
-        errors.value[key] = apiErrors[key][0];
+        formErrors[key] = apiErrors[key][0];
       }
+      setErrors(formErrors);
     } else if (err.response?._data?.message) {
+      // show global error message
       errorMsg.value = err.response._data.message;
     } else {
       errorMsg.value = "An error occurred during login. Please try again.";
     }
-  } finally {
-    isLoading.value = false;
   }
-}
+});
 </script>

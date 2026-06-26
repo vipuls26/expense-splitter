@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-100 dark:border-slate-800 pb-6 gap-4 transition-colors"
+    class="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 dark:border-slate-700 pb-6 gap-4 transition-colors"
   >
     <div class="flex items-center gap-4">
       <BaseButton
@@ -21,7 +21,7 @@
             <button
               v-if="isOwner"
               @click="startEditing"
-              class="text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-1"
+              class="text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1"
             >
               <i class="pi pi-pencil text-sm"></i>
             </button>
@@ -94,11 +94,11 @@
       class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 transition-opacity"
     >
       <div
-        class="bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up transition-colors"
+        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up transition-colors"
       >
         <!-- header -->
         <div
-          class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center"
+          class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center"
         >
           <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
             Edit Group Details
@@ -141,7 +141,7 @@
 
         <!-- footer -->
         <div
-          class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50"
+          class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50"
         >
           <button
             @click="isEditing = false"

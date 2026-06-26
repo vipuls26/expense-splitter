@@ -12,11 +12,14 @@
     </div>
 
     <div>
-      <form @submit.prevent="handleCreateGroup" class="space-y-6">
+      <form
+        @submit.prevent="handleCreateGroup"
+        class="space-y-6 tablet:space-y-8"
+      >
         <BaseInput
           id="name"
           label="Name"
-          v-model="form.name"
+          v-model="name"
           icon="pi-users"
           placeholder="Enter group name"
           :error="errors.name"
@@ -26,7 +29,7 @@
         <BaseTextarea
           id="description"
           label="Description (Optional)"
-          v-model="form.description"
+          v-model="description"
           icon="pi-align-left"
           placeholder="Enter description"
           :rows="4"
@@ -41,11 +44,11 @@
         </div>
 
         <div
-          class="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-800"
+          class="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700"
         >
           <BaseButton
             type="submit"
-            :is-loading="isLoading"
+            :is-loading="isSubmitting"
             loading-text="Creating..."
           >
             Create
@@ -57,72 +60,82 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useGroupStore } from "~/stores/group";
 import { useToast } from "~/composables/useToast";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseTextarea from "~/components/ui/BaseTextarea.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import * as z from "zod";
 
 definePageMeta({
   middleware: ["auth"],
   layout: "dashboard",
 });
 
-interface CreateGroupForm {
-  name: string;
-  description: string;
-}
+const groupSchema = toTypedSchema(
+  z.object({
+    name: z
+      .string()
+      .min(1, "Group name is required.")
+      .min(3, "Group name must be at least 3 characters long.")
+      .max(255, "Group name must not exceed 255 characters."),
+    description: z.string().optional(),
+  }),
+);
 
-const form = ref<CreateGroupForm>({
-  name: "",
-  description: "",
+const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
+  validationSchema: groupSchema,
+  initialValues: {
+    name: "",
+    description: "",
+  },
 });
 
-const isLoading = ref(false);
+const [name] = defineField("name");
+const [description] = defineField("description");
+
 const errorMsg = ref("");
-const errors = ref<Record<string, string>>({});
 
 const router = useRouter();
 const groupStore = useGroupStore();
 const { addToast } = useToast();
 
-function handleValidationErrors(err: any): boolean {
-  if (err.response?.status === 422 && err.response?._data?.errors) {
-    const apiErrors = err.response._data.errors;
-
-    for (const key in apiErrors) {
-      errors.value[key] = apiErrors[key][0];
-    }
-    return true;
-  }
-  return false;
-}
-
-// Handles the creation of a new group by submitting the form data
-async function handleCreateGroup() {
-  isLoading.value = true;
+// handle the creation of a new group by submitting the form data
+const handleCreateGroup = handleSubmit(async (values) => {
   errorMsg.value = "";
-  errors.value = {};
 
   try {
-    const response = await groupStore.createGroup(form.value);
+    const response = await groupStore.createGroup({
+      name: values.name,
+      description: values.description || "",
+    });
 
     if (response.success) {
+      // redirect to the newly created group page
       addToast("Group created successfully!", "success");
-      router.push(`/groups/${response.data.id}`);
+      router.push(`/group/${response.data.id}`);
     } else {
       errorMsg.value = response.message || "Failed to create group";
     }
   } catch (err: any) {
-    if (handleValidationErrors(err)) {
+    if (err.response?.status === 422 && err.response?._data?.errors) {
+      // map backend validation errors to frontend inputs
+      const apiErrors = err.response._data.errors;
+      const formErrors: Record<string, string> = {};
+      for (const key in apiErrors) {
+        formErrors[key] = apiErrors[key][0];
+      }
+      setErrors(formErrors);
       return;
     }
 
+    // show global error message
     errorMsg.value =
       err.response?._data?.message ?? "An error occurred. Please try again.";
-  } finally {
-    isLoading.value = false;
   }
-}
+});
 </script>

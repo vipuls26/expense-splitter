@@ -5,7 +5,7 @@
       :for="id"
       class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
     >
-      {{ label }}
+      {{ label }}<span v-if="required" class="text-red-500 ml-1">*</span>
     </label>
     <div class="relative">
       <span
@@ -50,7 +50,7 @@
 defineProps<{
   id: string;
   label?: string;
-  modelValue: string;
+  modelValue: string | undefined;
   placeholder?: string;
   rows?: number | string;
   error?: string;

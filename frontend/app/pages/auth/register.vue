@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950 p-4 transition-colors"
+    class="min-h-screen flex items-center justify-center p-4 transition-colors"
   >
     <div class="max-w-sm w-full space-y-8">
       <div class="text-center">
@@ -79,7 +79,7 @@
 
         <BaseButton
           type="submit"
-          :is-loading="isLoading"
+          :is-loading="isSubmitting"
           icon="pi-user-plus"
           loading-text="Creating account..."
           block
@@ -108,43 +108,85 @@ import { useAuthStore } from "~/stores/auth";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import { useToast } from "~/composables/useToast";
+import { useForm } from "vee-validate";
+import { toTypedSchema } from "@vee-validate/zod";
+import * as z from "zod";
 
 definePageMeta({
   layout: "guest",
 });
 
-const name = ref("");
-const email = ref("");
-const password = ref("");
-const password_confirmation = ref("");
-const phone_no = ref("");
+const registerSchema = toTypedSchema(
+  z
+    .object({
+      name: z
+        .string()
+        .min(1, "Name is required")
+        .min(3, "Name must be at least 3 characters long"),
+      email: z
+        .string()
+        .min(1, "Email is required")
+        .email("Enter a valid email"),
+      password: z
+        .string()
+        .min(1, "Password is required")
+        .min(8, "Password must be at least 8 characters long"),
+      password_confirmation: z
+        .string()
+        .min(1, "Password confirmation is required"),
+      phone_no: z
+        .string()
+        .min(1, "Phone no is required")
+        .regex(/^\d{10}$/, "Phone no should not more than 10 digits"),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+      message: "Passwords do not match",
+      path: ["password_confirmation"],
+    }),
+);
+
+const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
+  validationSchema: registerSchema,
+  initialValues: {
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+    phone_no: "",
+  },
+});
+
+const [name] = defineField("name");
+const [email] = defineField("email");
+const [password] = defineField("password");
+const [password_confirmation] = defineField("password_confirmation");
+const [phone_no] = defineField("phone_no");
+
 const errorMsg = ref("");
-const errors = ref<Record<string, string>>({});
-const isLoading = ref(false);
 
 const router = useRouter();
 const authStore = useAuthStore();
 const api = useApi();
 const { addToast } = useToast();
 
-async function handleRegister() {
-  isLoading.value = true;
+// handle the registration form submission
+const handleRegister = handleSubmit(async (values) => {
   errorMsg.value = "";
-  errors.value = {};
 
   try {
     const response: any = await api("/register", {
       method: "POST",
       body: {
-        name: name.value,
-        email: email.value,
-        password: password.value,
-        password_confirmation: password_confirmation.value,
-        phone_no: phone_no.value,
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        password_confirmation: values.password_confirmation,
+        phone_no: values.phone_no,
       },
     });
 
     if (response.success) {
+      // save token and redirect on success
       authStore.setAuth(response.data.user, response.data.token);
       addToast("Registration successful! Welcome.", "success");
       router.push("/");
@@ -153,18 +195,20 @@ async function handleRegister() {
     }
   } catch (err: any) {
     if (err.response?.status === 422 && err.response?._data?.errors) {
+      // map backend validation errors to frontend inputs
       const apiErrors = err.response._data.errors;
+      const formErrors: Record<string, string> = {};
       for (const key in apiErrors) {
-        errors.value[key] = apiErrors[key][0];
+        formErrors[key] = apiErrors[key][0];
       }
+      setErrors(formErrors);
     } else if (err.response?._data?.message) {
+      // show global error message
       errorMsg.value = err.response._data.message;
     } else {
       errorMsg.value =
         "An error occurred during registration. Please try again.";
     }
-  } finally {
-    isLoading.value = false;
   }
-}
+});
 </script>

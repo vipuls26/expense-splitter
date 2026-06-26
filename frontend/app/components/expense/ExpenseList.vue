@@ -1,9 +1,9 @@
 <template>
   <div
-    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors"
+    class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors"
   >
     <div
-      class="px-4 phone-lg:px-6 py-4 phone-lg:py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50"
+      class="px-4 phone-lg:px-6 py-4 phone-lg:py-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50"
     >
       <div>
         <h2
@@ -104,7 +104,7 @@
 
         <!-- Right Side: Split details & Actions -->
         <div
-          class="flex items-center justify-between tablet:justify-end gap-6 border-t tablet:border-0 border-slate-100 dark:border-slate-800 pt-3 tablet:pt-0 mt-3 tablet:mt-0"
+          class="flex items-center justify-between tablet:justify-end gap-6 border-t tablet:border-0 border-slate-200 dark:border-slate-700 pt-3 tablet:pt-0 mt-3 tablet:mt-0"
         >
           <div class="text-sm text-right">
             <span class="text-slate-500 dark:text-slate-400 block mb-0.5"

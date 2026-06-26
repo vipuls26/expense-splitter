@@ -11,7 +11,7 @@
 
     <!-- Dialog -->
     <div
-      class="bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md relative z-10 overflow-hidden transform transition-all"
+      class="bg-white dark:bg-slate-800 rounded-xl shadow-sm w-full max-w-md relative z-10 overflow-hidden transform transition-all"
     >
       <!-- Header / Icon -->
       <div class="p-6 pb-4">
@@ -37,7 +37,7 @@
 
       <!-- Footer -->
       <div
-        class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800"
+        class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-700"
       >
         <BaseButton
           @click="$emit('close')"

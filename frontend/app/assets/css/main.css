@@ -2,17 +2,34 @@
 
 @custom-variant dark (&:is(.dark *));
 @theme {
+  /* mobile screen */
+  --breakpoint-phone-s: 320px;
+  --breakpoint-phone-m: 375px;
+  --breakpoint-phone-lg: 425px;
 
-    /* mobile screen */
-    --breakpoint-phone-s: 320px;
-    --breakpoint-phone-m: 375px;
-    --breakpoint-phone-lg: 425px;
+  /* tablet */
+  --breakpoint-tablet: 768px;
 
-    /* tablet */
-    --breakpoint-tablet: 768px;
+  /* laptop */
+  --breakpoint-laptop: 1024px;
+  --breakpoint-desktop: 1440px;
+}
 
-    /* laptop */
-    --breakpoint-laptop: 1024px;
-    --breakpoint-desktop: 1440px;
+@layer base {
+  /* Fix Chrome's ugly autofill background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important; /* Solid white background */
+    -webkit-text-fill-color: #0f172a !important; /* Default light mode text */
+  }
 
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #020617 inset !important; /* Solid slate-950 background */
+    -webkit-text-fill-color: #f1f5f9 !important; /* Dark mode slate-100 text */
+  }
 }
