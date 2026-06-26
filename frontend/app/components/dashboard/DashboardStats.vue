@@ -1,7 +1,7 @@
 <template>
   <section class="grid grid-cols-1 tablet:grid-cols-3 gap-4">
     <div
-      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
+      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-300 ring-1 ring-slate-900/5 dark:ring-0 dark:border-slate-800 shadow-md relative overflow-hidden transition-colors"
     >
       <div
         v-if="dashboardStore.isLoading"
@@ -12,27 +12,15 @@
         ></i>
       </div>
       <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
-        Total Balance
+        Wallet Balance
       </p>
-      <p
-        :class="{
-          'text-emerald-600 dark:text-emerald-400':
-            dashboardStore.stats.total_balance > 0,
-          'text-red-600 dark:text-red-400':
-            dashboardStore.stats.total_balance < 0,
-          'text-slate-900 dark:text-slate-100':
-            dashboardStore.stats.total_balance === 0,
-        }"
-        class="text-3xl font-bold"
-      >
-        {{ dashboardStore.stats.total_balance > 0 ? "+" : "" }}₹{{
-          Math.abs(dashboardStore.stats.total_balance).toFixed(2)
-        }}
+      <p class="text-3xl font-bold text-slate-900 dark:text-slate-100">
+        ₹{{ walletStore.walletDetails?.balance || "0.00" }}
       </p>
     </div>
 
     <div
-      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
+      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-300 ring-1 ring-slate-900/5 dark:ring-0 dark:border-slate-800 shadow-md relative overflow-hidden transition-colors"
     >
       <div
         v-if="dashboardStore.isLoading"
@@ -51,7 +39,7 @@
     </div>
 
     <div
-      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden transition-colors"
+      class="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-300 ring-1 ring-slate-900/5 dark:ring-0 dark:border-slate-800 shadow-md relative overflow-hidden transition-colors"
     >
       <div
         v-if="dashboardStore.isLoading"
@@ -73,7 +61,8 @@
 
 <script setup lang="ts">
 import { useDashboardStore } from "~/stores/dashboard";
+import { useWalletStore } from "~/stores/wallet";
 
 const dashboardStore = useDashboardStore();
-const TotalBalance = useWalletStore();
+const walletStore = useWalletStore();
 </script>

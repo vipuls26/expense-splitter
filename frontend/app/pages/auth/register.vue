@@ -117,16 +117,32 @@ definePageMeta({
 });
 
 const registerSchema = toTypedSchema(
-  z.object({
-    name: z.string().min(1, "Name is required").min(3, "Name must be at least 3 characters long"),
-    email: z.string().min(1, "Email is required").email("Enter a valid email"),
-    password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters long"),
-    password_confirmation: z.string().min(1, "Password confirmation is required"),
-    phone_no: z.string().min(1, "Phone no is required").regex(/^\d{10}$/, "Phone no should not more than 10 digits"),
-  }).refine((data) => data.password === data.password_confirmation, {
-    message: "Passwords do not match",
-    path: ["password_confirmation"],
-  })
+  z
+    .object({
+      name: z
+        .string()
+        .min(1, "Name is required")
+        .min(3, "Name must be at least 3 characters long"),
+      email: z
+        .string()
+        .min(1, "Email is required")
+        .email("Enter a valid email"),
+      password: z
+        .string()
+        .min(1, "Password is required")
+        .min(8, "Password must be at least 8 characters long"),
+      password_confirmation: z
+        .string()
+        .min(1, "Password confirmation is required"),
+      phone_no: z
+        .string()
+        .min(1, "Phone no is required")
+        .regex(/^\d{10}$/, "Phone no should not more than 10 digits"),
+    })
+    .refine((data) => data.password === data.password_confirmation, {
+      message: "Passwords do not match",
+      path: ["password_confirmation"],
+    }),
 );
 
 const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
@@ -137,14 +153,14 @@ const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
     password: "",
     password_confirmation: "",
     phone_no: "",
-  }
+  },
 });
 
-const [name] = defineField('name');
-const [email] = defineField('email');
-const [password] = defineField('password');
-const [password_confirmation] = defineField('password_confirmation');
-const [phone_no] = defineField('phone_no');
+const [name] = defineField("name");
+const [email] = defineField("email");
+const [password] = defineField("password");
+const [password_confirmation] = defineField("password_confirmation");
+const [phone_no] = defineField("phone_no");
 
 const errorMsg = ref("");
 

@@ -1,38 +1,38 @@
 export interface Wallet {
-    id: number;
-    balance: string
+  id: number;
+  balance: string;
 }
 
 export interface WalletTransaction {
-    id: number;
-    type: WalletTransactionType;
-    amount: string;
-    balance_before: string;
-    balance_after: string;
-    description: string | null;
-    created_at: string
+  id: number;
+  type: WalletTransactionType;
+  amount: string;
+  balance_before: string;
+  balance_after: string;
+  description: string | null;
+  created_at: string;
 }
 
 export interface DepositPayload {
-    amount: number;
+  amount: number;
 }
 
 export interface WalletResponse {
-    success: boolean;
-    message?: string;
-    data: Wallet;
+  success: boolean;
+  message?: string;
+  data: Wallet;
 }
 
 export interface WalletTransactionsResponse {
-    success: boolean;
-    message?: string;
-    data: WalletTransaction[];
+  success: boolean;
+  message?: string;
+  data: WalletTransaction[];
 }
 
 // transction type
 export type WalletTransactionType =
-    | "deposit" 
-    | "expense_payment"
-    | "refund"
-    | "settlement_payment"
-    | "settlement_received";
+  | "deposit"
+  | "expense_payment"
+  | "refund"
+  | "settlement_payment"
+  | "settlement_received";

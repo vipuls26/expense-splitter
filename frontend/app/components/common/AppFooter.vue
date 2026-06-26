@@ -1,5 +1,7 @@
 <template>
-  <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-auto">
+  <footer
+    class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-auto"
+  >
     <div class="max-w-7xl mx-auto px-4 tablet:px-6 laptop:px-8 py-8">
       <div
         class="flex flex-col tablet:flex-row justify-between items-center gap-6"
@@ -8,7 +10,8 @@
         <div class="flex flex-col items-center tablet:items-start gap-2">
           <NuxtLink to="/" class="flex items-center gap-2">
             <i class="pi pi-wallet text-indigo-600 text-lg"></i>
-            <span class="font-bold text-lg tracking-tight text-slate-800 dark:text-slate-100"
+            <span
+              class="font-bold text-lg tracking-tight text-slate-800 dark:text-slate-100"
               >Splitter</span
             >
           </NuxtLink>

@@ -87,8 +87,11 @@ definePageMeta({
 const loginSchema = toTypedSchema(
   z.object({
     email: z.string().min(1, "Email is required").email("Enter a valid email"),
-    password: z.string().min(1, "Password is required").min(8, "Password must be at least 8 characters long"),
-  })
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .min(8, "Password must be at least 8 characters long"),
+  }),
 );
 
 const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
@@ -96,11 +99,11 @@ const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
   initialValues: {
     email: "",
     password: "",
-  }
+  },
 });
 
-const [email] = defineField('email');
-const [password] = defineField('password');
+const [email] = defineField("email");
+const [password] = defineField("password");
 
 const errorMsg = ref("");
 

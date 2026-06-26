@@ -45,12 +45,12 @@ class WalletService
             $this->walletRepository->updateBalance($wallet, $after);
 
             $this->walletRepository->createTransaction([
-                'wallet_id'       => $wallet->id,
-                'type'            => WalletTransactionType::Deposit,
-                'amount'          => $amount,
-                'balance_before'  => $before,
-                'balance_after'   => $after,
-                'description'     => 'Wallet top-up',
+                'wallet_id' => $wallet->id,
+                'type' => WalletTransactionType::Deposit,
+                'amount' => $amount,
+                'balance_before' => $before,
+                'balance_after' => $after,
+                'description' => 'Wallet top-up',
             ]);
 
             return $wallet->refresh();
@@ -80,12 +80,12 @@ class WalletService
             $this->walletRepository->updateBalance($wallet, $after);
 
             $this->walletRepository->createTransaction([
-                'wallet_id'       => $wallet->id,
-                'type'            => WalletTransactionType::ExpensePayment,
-                'amount'          => $amount,
-                'balance_before'  => $before,
-                'balance_after'   => $after,
-                'description'     => $description,
+                'wallet_id' => $wallet->id,
+                'type' => WalletTransactionType::ExpensePayment,
+                'amount' => $amount,
+                'balance_before' => $before,
+                'balance_after' => $after,
+                'description' => $description,
             ]);
 
             return $wallet->refresh();
@@ -116,12 +116,12 @@ class WalletService
             $payerAfter = $payerBefore - $amount;
             $this->walletRepository->updateBalance($payerWallet, $payerAfter);
             $this->walletRepository->createTransaction([
-                'wallet_id'       => $payerWallet->id,
-                'type'            => WalletTransactionType::SettlementPayment,
-                'amount'          => $amount,
-                'balance_before'  => $payerBefore,
-                'balance_after'   => $payerAfter,
-                'description'     => $description . ' to ' . $payee->name,
+                'wallet_id' => $payerWallet->id,
+                'type' => WalletTransactionType::SettlementPayment,
+                'amount' => $amount,
+                'balance_before' => $payerBefore,
+                'balance_after' => $payerAfter,
+                'description' => $description.' to '.$payee->name,
             ]);
 
             // Credit to payee
@@ -129,12 +129,12 @@ class WalletService
             $payeeAfter = $payeeBefore + $amount;
             $this->walletRepository->updateBalance($payeeWallet, $payeeAfter);
             $this->walletRepository->createTransaction([
-                'wallet_id'       => $payeeWallet->id,
-                'type'            => WalletTransactionType::SettlementReceived,
-                'amount'          => $amount,
-                'balance_before'  => $payeeBefore,
-                'balance_after'   => $payeeAfter,
-                'description'     => $description . ' from ' . $payer->name,
+                'wallet_id' => $payeeWallet->id,
+                'type' => WalletTransactionType::SettlementReceived,
+                'amount' => $amount,
+                'balance_before' => $payeeBefore,
+                'balance_after' => $payeeAfter,
+                'description' => $description.' from '.$payer->name,
             ]);
         });
     }
@@ -156,20 +156,19 @@ class WalletService
             $this->walletRepository->updateBalance($wallet, $after);
 
             $this->walletRepository->createTransaction([
-                'wallet_id'       => $wallet->id,
-                'type'            => WalletTransactionType::Refund,
-                'amount'          => $amount,
-                'balance_before'  => $before,
-                'balance_after'   => $after,
-                'description'     => $description,
+                'wallet_id' => $wallet->id,
+                'type' => WalletTransactionType::Refund,
+                'amount' => $amount,
+                'balance_before' => $before,
+                'balance_after' => $after,
+                'description' => $description,
             ]);
 
             return $wallet->refresh();
         });
     }
 
-
-    public function getTransactions(User $user)
+    public function getTransactions(User $user, int $perPage = 10)
     {
         $wallet = $this->walletRepository->findByUserId($user->id);
 
@@ -177,8 +176,6 @@ class WalletService
             throw new RuntimeException('wallet not found');
         }
 
-        $transactions = $this->walletRepository->getTransactions($wallet)->get();
-
-        return $transactions;
+        return $this->walletRepository->getTransactions($wallet)->paginate($perPage);
     }
 }

@@ -68,7 +68,9 @@
               {{ member.id === authStore.user?.id ? "You" : member.name }}
             </option>
           </select>
-          <p v-if="errors.paid_by" class="text-red-500 text-xs mt-1">{{ errors.paid_by }}</p>
+          <p v-if="errors.paid_by" class="text-red-500 text-xs mt-1">
+            {{ errors.paid_by }}
+          </p>
         </div>
 
         <!-- Split Options -->
@@ -76,7 +78,9 @@
           <div class="flex justify-between items-center mb-3">
             <label
               class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >Split Equally Between<span class="text-red-500 ml-1">*</span></label
+              >Split Equally Between<span class="text-red-500 ml-1"
+                >*</span
+              ></label
             >
             <span
               class="text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-400 px-2 py-1 rounded-full"
@@ -84,7 +88,9 @@
               ₹{{ splitAmountPerPerson.toFixed(2) }} / person
             </span>
           </div>
-          <p v-if="errors.selectedMembers" class="text-red-500 text-xs mb-2">{{ errors.selectedMembers }}</p>
+          <p v-if="errors.selectedMembers" class="text-red-500 text-xs mb-2">
+            {{ errors.selectedMembers }}
+          </p>
 
           <div class="space-y-2 max-h-40 overflow-y-auto pr-2">
             <label
@@ -120,10 +126,7 @@
       <div
         class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50"
       >
-        <BaseButton
-          @click="$emit('close')"
-          variant="outline"
-        >
+        <BaseButton @click="$emit('close')" variant="outline">
           Cancel
         </BaseButton>
         <BaseButton
@@ -171,28 +174,44 @@ const { addToast } = useToast();
 
 const expenseSchema = toTypedSchema(
   z.object({
-    description: z.string().min(1, "The description field is required.").max(255, "The description may not be greater than 255 characters."),
-    amount: z.coerce.number({ message: "The amount field is required and must be a number." }).gt(0, "The amount must be greater than 0."),
-    paid_by: z.union([z.string(), z.number()], { message: "The selected payer does not exist." }),
-    selectedMembers: z.array(z.union([z.string(), z.number()])).min(1, "At least one split is required."),
-  })
+    description: z
+      .string()
+      .min(1, "The description field is required.")
+      .max(255, "The description may not be greater than 255 characters."),
+    amount: z.coerce
+      .number({ message: "The amount field is required and must be a number." })
+      .gt(0, "The amount must be greater than 0."),
+    paid_by: z.union([z.string(), z.number()], {
+      message: "The selected payer does not exist.",
+    }),
+    selectedMembers: z
+      .array(z.union([z.string(), z.number()]))
+      .min(1, "At least one split is required."),
+  }),
 );
 
-const { handleSubmit, errors, defineField, resetForm, setErrors, isSubmitting } = useForm({
+const {
+  handleSubmit,
+  errors,
+  defineField,
+  resetForm,
+  setErrors,
+  isSubmitting,
+} = useForm({
   validationSchema: expenseSchema,
   initialValues: {
     description: "",
     amount: undefined as any,
     paid_by: undefined as any,
-    selectedMembers: []
-  }
+    selectedMembers: [],
+  },
 });
 
 // define fields with any to prevent vue strict template errors
-const [description] = defineField('description') as any;
-const [amount] = defineField('amount') as any;
-const [paid_by] = defineField('paid_by') as any;
-const [selectedMembers] = defineField('selectedMembers') as any;
+const [description] = defineField("description") as any;
+const [amount] = defineField("amount") as any;
+const [paid_by] = defineField("paid_by") as any;
+const [selectedMembers] = defineField("selectedMembers") as any;
 
 // set default values when the modal opens
 watch(
@@ -205,7 +224,7 @@ watch(
           amount: undefined as any,
           paid_by: authStore.user?.id ?? props.members[0]?.id,
           selectedMembers: props.members.map((member) => member.id),
-        }
+        },
       });
     }
   },
@@ -214,7 +233,12 @@ watch(
 // calculate the split amount per selected person
 const splitAmountPerPerson = computed(() => {
   const currentAmount = Number(amount.value) || 0;
-  if (!selectedMembers.value || selectedMembers.value.length === 0 || currentAmount <= 0) return 0;
+  if (
+    !selectedMembers.value ||
+    selectedMembers.value.length === 0 ||
+    currentAmount <= 0
+  )
+    return 0;
 
   return currentAmount / selectedMembers.value.length;
 });
@@ -242,9 +266,12 @@ const onSubmit = handleSubmit(async (values) => {
       for (const key in apiErrors) {
         formErrors[key] = apiErrors[key][0];
       }
-      
-      if (apiErrors['splits'] || Object.keys(apiErrors).some(k => k.startsWith('splits.'))) {
-          formErrors.selectedMembers = "At least one split is required.";
+
+      if (
+        apiErrors["splits"] ||
+        Object.keys(apiErrors).some((k) => k.startsWith("splits."))
+      ) {
+        formErrors.selectedMembers = "At least one split is required.";
       }
       setErrors(formErrors);
       return;
@@ -255,13 +282,15 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 // calculate the exact splits, giving the remainder to the first member
-function buildSplits(totalAmount: number, membersToSplit: Id[]): CreateExpensePayload["splits"] {
+function buildSplits(
+  totalAmount: number,
+  membersToSplit: Id[],
+): CreateExpensePayload["splits"] {
   const baseAmount =
     Math.floor((totalAmount / membersToSplit.length) * 100) / 100;
 
   const remainder =
-    Math.round((totalAmount - baseAmount * membersToSplit.length) * 100) /
-    100;
+    Math.round((totalAmount - baseAmount * membersToSplit.length) * 100) / 100;
 
   return membersToSplit.map((userId, index) => ({
     user_id: userId,

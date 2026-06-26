@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group cursor-pointer bg-white dark:bg-slate-800 rounded-xl p-4 phone-lg:p-5 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-all flex flex-col h-full"
+    class="group cursor-pointer bg-white dark:bg-slate-800 rounded-xl p-4 phone-lg:p-5 border border-slate-300 ring-1 ring-slate-900/5 dark:ring-0 dark:border-slate-700 shadow-md hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-lg transition-all flex flex-col h-full"
   >
     <div class="flex justify-between items-start mb-3 phone-lg:mb-4">
       <div

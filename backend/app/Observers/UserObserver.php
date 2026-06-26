@@ -13,7 +13,7 @@ class UserObserver
     {
         //
         $user->wallet()->create([
-            'balance' => 0
+            'balance' => 0,
         ]);
     }
 

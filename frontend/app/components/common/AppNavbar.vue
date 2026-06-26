@@ -1,11 +1,14 @@
 <template>
-  <nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 w-full">
+  <nav
+    class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 w-full"
+  >
     <div class="max-w-7xl mx-auto px-4 tablet:px-6 laptop:px-8">
       <div class="flex justify-between h-16 items-center">
         <!-- Logo Area -->
         <NuxtLink to="/" class="flex items-center gap-2">
           <i class="pi pi-wallet text-indigo-600 text-xl"></i>
-          <span class="font-bold text-xl tracking-tight text-slate-800 dark:text-slate-100"
+          <span
+            class="font-bold text-xl tracking-tight text-slate-800 dark:text-slate-100"
             >Splitter</span
           >
         </NuxtLink>
@@ -13,7 +16,9 @@
         <!-- Navigation Links / Auth -->
         <div class="flex items-center gap-6">
           <div v-if="authStore.isLoggedIn" class="flex items-center gap-4">
-            <span class="text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2">
+            <span
+              class="text-slate-600 dark:text-slate-300 font-medium flex items-center gap-2"
+            >
               <i class="pi pi-user text-indigo-500"></i
               >{{ authStore.user?.name }}
             </span>

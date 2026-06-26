@@ -3,7 +3,8 @@
     <label
       :for="id"
       class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
-      >{{ label }}<span v-if="required" class="text-red-500 ml-1">*</span></label
+      >{{ label
+      }}<span v-if="required" class="text-red-500 ml-1">*</span></label
     >
     <div class="relative">
       <span
@@ -23,7 +24,9 @@
           $emit('update:modelValue', ($event.target as HTMLInputElement).value)
         "
         @keydown="
-          type === 'number' && ['e', 'E', '+', '-'].includes($event.key) ? $event.preventDefault() : null
+          type === 'number' && ['e', 'E', '+', '-'].includes($event.key)
+            ? $event.preventDefault()
+            : null
         "
         :class="[
           'w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 transition-colors outline-none bg-transparent dark:text-slate-100',
@@ -48,7 +51,7 @@
       v-if="error"
       :class="[
         'text-sm text-red-600 dark:text-red-400 flex items-start gap-1.5 z-10 w-full',
-        absoluteError ? 'absolute top-full left-0 mt-1.5' : 'mt-1.5'
+        absoluteError ? 'absolute top-full left-0 mt-1.5' : 'mt-1.5',
       ]"
     >
       <i class="pi pi-exclamation-circle text-xs mt-[3px]"></i>

@@ -7,6 +7,7 @@ use App\Http\Resources\WalletResource;
 use App\Http\Resources\WalletTransactionResource;
 use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WalletController extends Controller
@@ -40,13 +41,22 @@ class WalletController extends Controller
     }
 
     // get wallet transactions
-    public function transactions(): JsonResponse
+    public function transactions(Request $request): JsonResponse
     {
-        $transactions = $this->walletService->getTransactions(Auth::user());
+        $perPage = $request->query('per_page', 10);
+        $transactions = $this->walletService->getTransactions(Auth::user(), (int) $perPage);
+
+        $resource = WalletTransactionResource::collection($transactions)->response()->getData(true);
 
         return response()->json([
             'success' => true,
-            'data' => WalletTransactionResource::collection($transactions),
+            'data' => $resource['data'],
+            'pagination' => [
+                'currentPage' => $transactions->currentPage(),
+                'lastPage' => $transactions->lastPage(),
+                'total' => $transactions->total(),
+                'perPage' => $transactions->perPage(),
+            ],
         ]);
     }
 }

@@ -30,7 +30,6 @@ class WalletTransaction extends Model
         'type' => WalletTransactionType::class,
     ];
 
-
     // wallet owner transction
     public function wallet(): BelongsTo
     {

@@ -35,8 +35,8 @@ class DepositRequest extends FormRequest
     {
         return [
             'amount.required' => 'Deposit amount is required.',
-            'amount.numeric'  => 'Deposit amount must be a number.',
-            'amount.min'      => 'Deposit amount must be at least 1.',
+            'amount.numeric' => 'Deposit amount must be a number.',
+            'amount.min' => 'Deposit amount must be at least 1.',
         ];
     }
 }

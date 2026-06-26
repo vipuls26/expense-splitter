@@ -7,19 +7,33 @@
     <div class="space-y-4">
       <div class="pb-2 border-b border-slate-200 dark:border-slate-700">
         <form @submit.prevent="handleAddMember" class="flex gap-2 items-center">
-          <input v-model="newMemberPhone" type="text" placeholder="Add by phone..."
+          <input
+            v-model="newMemberPhone"
+            type="text"
+            placeholder="Add by phone..."
             class="min-w-0 flex-1 text-sm border border-slate-200 dark:border-slate-700 bg-transparent dark:text-slate-100 rounded-lg px-3 py-2 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-0 outline-none transition-colors"
-            required />
-          <BaseButton type="submit" size="sm" :is-loading="isAddingMember" variant="solid" class="shrink-0">Add
+            required
+          />
+          <BaseButton
+            type="submit"
+            size="sm"
+            :is-loading="isAddingMember"
+            variant="solid"
+            class="shrink-0"
+            >Add
           </BaseButton>
         </form>
       </div>
 
       <div class="space-y-3">
-        <div v-for="member in groupStore.currentGroup?.members || []" :key="member.id"
-          class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 transition-colors">
+        <div
+          v-for="member in groupStore.currentGroup?.members || []"
+          :key="member.id"
+          class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 transition-colors"
+        >
           <div
-            class="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm shrink-0">
+            class="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm shrink-0"
+          >
             {{ member.name.charAt(0).toUpperCase() }}
           </div>
           <div class="flex-1">
@@ -30,20 +44,30 @@
               {{ member.role }}
             </p>
           </div>
-          <button v-if="isOwner && member.id !== authStore.user?.id" @click="confirmRemoveMember(member)"
+          <button
+            v-if="isOwner && member.id !== authStore.user?.id"
+            @click="confirmRemoveMember(member)"
             class="text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            title="Remove Member">
+            title="Remove Member"
+          >
             <i class="pi pi-times text-sm"></i>
           </button>
         </div>
-
       </div>
 
       <!-- Remove Member Dialog -->
-      <BaseDialog :is-open="isRemoveMemberDialogOpen" title="Remove Member"
+      <BaseDialog
+        :is-open="isRemoveMemberDialogOpen"
+        title="Remove Member"
         :message="`Are you sure you want to remove ${memberToRemove?.name} from this group?`"
-        confirm-text="Remove Member" cancel-text="Cancel" confirm-variant="danger" icon="pi-user-minus"
-        :is-loading="isRemoving" @close="isRemoveMemberDialogOpen = false" @confirm="executeRemoveMember" />
+        confirm-text="Remove Member"
+        cancel-text="Cancel"
+        confirm-variant="danger"
+        icon="pi-user-minus"
+        :is-loading="isRemoving"
+        @close="isRemoveMemberDialogOpen = false"
+        @confirm="executeRemoveMember"
+      />
     </div>
   </div>
 </template>

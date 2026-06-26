@@ -26,5 +26,4 @@ interface WalletRepositoryInterface
     // get wallet transction
 
     public function getTransactions(Wallet $wallet);
-    
 }

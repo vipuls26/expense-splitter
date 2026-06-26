@@ -7,13 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id','balance'])]
+#[Fillable(['user_id', 'balance'])]
 class Wallet extends Model
 {
     protected $casts = [
         'balance' => 'decimal:2',
     ];
-
 
     // wallet owner
     public function user(): BelongsTo

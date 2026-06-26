@@ -7,11 +7,10 @@ use App\Models\Group;
 use App\Models\User;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
-use App\Services\WalletService;
-use InvalidArgumentException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use InvalidArgumentException;
 
 class ExpenseService
 {
@@ -51,7 +50,7 @@ class ExpenseService
         if (empty($data['is_settlement'])) {
             $payerId = $data['paid_by'] ?? $userId;
             $payer = User::findOrFail($payerId);
-            $this->walletService->payExpense($payer, $amount, 'Paid for expense: ' . $data['description']);
+            $this->walletService->payExpense($payer, $amount, 'Paid for expense: '.$data['description']);
         }
 
         return $this->expenseRepository->create(
@@ -114,7 +113,7 @@ class ExpenseService
             $this->walletService->processSettlement($payee, $payer, $expense->amount, 'Reversed settlement');
         } else {
             $payer = User::findOrFail($expense->paid_by);
-            $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: ' . $expense->description);
+            $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: '.$expense->description);
         }
 
         return $this->expenseRepository->delete($expense);

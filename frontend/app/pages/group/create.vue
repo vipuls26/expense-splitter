@@ -1,5 +1,5 @@
 <template>
-  <div class="py-8 px-4 tablet:px-6 max-w-2xl mx-auto">
+  <div class="py-8 px-4 tablet:px-6 max-w-2xl">
     <div class="mb-10 flex items-center justify-between">
       <h1 class="text-2xl font-semibold dark:text-slate-100">Create Group</h1>
       <BaseButton
@@ -12,7 +12,10 @@
     </div>
 
     <div>
-      <form @submit.prevent="handleCreateGroup" class="space-y-6">
+      <form
+        @submit.prevent="handleCreateGroup"
+        class="space-y-6 tablet:space-y-8"
+      >
         <BaseInput
           id="name"
           label="Name"
@@ -75,9 +78,13 @@ definePageMeta({
 
 const groupSchema = toTypedSchema(
   z.object({
-    name: z.string().min(1, "Group name is required.").min(3, "Group name must be at least 3 characters long.").max(255, "Group name must not exceed 255 characters."),
+    name: z
+      .string()
+      .min(1, "Group name is required.")
+      .min(3, "Group name must be at least 3 characters long.")
+      .max(255, "Group name must not exceed 255 characters."),
     description: z.string().optional(),
-  })
+  }),
 );
 
 const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
@@ -85,11 +92,11 @@ const { handleSubmit, errors, defineField, setErrors, isSubmitting } = useForm({
   initialValues: {
     name: "",
     description: "",
-  }
+  },
 });
 
-const [name] = defineField('name');
-const [description] = defineField('description');
+const [name] = defineField("name");
+const [description] = defineField("description");
 
 const errorMsg = ref("");
 

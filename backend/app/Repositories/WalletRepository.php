@@ -9,7 +9,6 @@ use App\Repositories\Interfaces\WalletRepositoryInterface;
 
 class WalletRepository implements WalletRepositoryInterface
 {
-
     // get wallet by user id
     public function findByUserId(int $userId): ?Wallet
     {
