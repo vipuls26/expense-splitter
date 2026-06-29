@@ -26,7 +26,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'min:3'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'min:8', 'confirmed'],
-            'phone_no' => ['required', 'digits:10'],
+            'phone_no' => ['required', 'digits:10', 'unique:users,phone_no'],
         ];
     }
 
@@ -51,6 +51,7 @@ class RegisterRequest extends FormRequest
             // phone
             'phone_no.required' => 'Phone no is required',
             'phone_no.digits' => 'Phone no should not more than 10 digits',
+            'phone_no.unique' => 'Phone no already exists',
         ];
     }
 }
