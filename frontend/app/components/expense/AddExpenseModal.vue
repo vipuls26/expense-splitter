@@ -1,7 +1,7 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
     <div
-      class="bg-white dark:bg-slate-800 rounded-xl shadow-sm max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up transition-colors">
+      class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up transition-colors">
       <!-- Header -->
       <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
         <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -16,19 +16,20 @@
       <!-- Scrollable Form Body -->
       <div class="p-6 overflow-y-auto flex-1 space-y-5">
         <!-- Category Dropdown -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Expense Category<span
-              class="text-red-500 ml-1">*</span></label>
-          <select v-model="expense_category_id"
-            class="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent dark:text-slate-100 dark:bg-slate-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 tablet:text-sm px-4 py-2 border outline-none transition-colors">
-            <option value="" disabled selected>Select a category</option>
-            <option v-for="category in categoryStore.categories" :key="category.id" :value="category.id"
-              class="dark:bg-slate-800">
-              {{ category.name }}
-            </option>
-          </select>
-          <p v-if="errors.expense_category_id" class="text-red-500 text-xs mt-1">{{ errors.expense_category_id }}</p>
-        </div>
+        <BaseSelect
+          id="expense_category_id"
+          label="Expense Category"
+          v-model="expense_category_id"
+          icon="pi-tags"
+          placeholder="Select a category"
+          :error="errors.expense_category_id"
+          required
+        >
+          <option v-for="category in categoryStore.categories" :key="category.id" :value="category.id"
+            class="dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+            {{ category.name }}
+          </option>
+        </BaseSelect>
 
         <!-- Description -->
         <BaseInput id="description" label="What was this for?" v-model="description"
@@ -90,6 +91,7 @@
 import { computed, watch } from "vue";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseSelect from "~/components/ui/BaseSelect.vue";
 import { useAuthStore } from "~/stores/auth";
 import { useExpenseStore } from "~/stores/expense";
 import { useWalletStore } from "~/stores/wallet";

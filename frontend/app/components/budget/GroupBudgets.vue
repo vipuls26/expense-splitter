@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-lg font-semibold dark:text-slate-100">Budgets</h2>
-      <BaseButton v-if="isOwner" size="sm" @click="emit('add-budget')" variant="outline">
+      <BaseButton v-if="isOwner" size="sm" @click="emit('add-budget')" variant="outline" class="whitespace-nowrap shrink-0">
         <i class="pi pi-plus mr-2"></i> Add Budget
       </BaseButton>
     </div>

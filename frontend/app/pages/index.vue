@@ -1,15 +1,13 @@
 <template>
   <div v-if="authStore.isLoggedIn" class="space-y-10 py-8 px-4 tablet:px-6">
-    <header
-      class="flex flex-col tablet:flex-row tablet:items-end justify-between gap-4"
-    >
+    <header class="flex flex-col tablet:flex-row tablet:items-end justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-1">
-          Dashboard
-        </h1>
-        <p class="text-slate-500 dark:text-slate-400">
-          Welcome back, {{ authStore.user?.name?.split(" ")[0] || "User" }}
+        <p class="text-slate-500 dark:text-slate-400 mb-1">
+          Welcome back 👋
         </p>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 capitalize">
+          {{ authStore.user?.name?.split(" ")[0] || "User" }}
+        </h1>
       </div>
     </header>
 

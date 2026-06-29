@@ -1,12 +1,12 @@
 <template>
   <div
-    class="flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 dark:border-slate-700 pb-6 gap-4 transition-colors"
+    class="flex flex-col md:flex-row md:items-start justify-between border-b border-slate-200 dark:border-slate-700 pb-6 gap-4 transition-colors"
   >
-    <div class="flex items-center gap-4">
+    <div class="flex items-start gap-4">
       <BaseButton
         @click="$router.push('/')"
         variant="ghost"
-        class="-ml-2 text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+        class="-ml-2 mt-0.5 tablet:mt-2 text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 shrink-0"
       >
         <i class="pi pi-arrow-left text-lg"></i>
       </BaseButton>
@@ -26,18 +26,27 @@
               <i class="pi pi-pencil text-sm"></i>
             </button>
           </div>
-          <p
-            class="text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mt-1"
-          >
-            {{
-              groupStore.currentGroup?.description || "No description provided."
-            }}
-          </p>
+          <div class="flex flex-wrap items-center gap-3 text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mt-2">
+            <div class="flex items-center gap-1.5" title="Members">
+              <i class="pi pi-users"></i>
+              <span>{{ groupStore.currentGroup?.members?.length || 0 }} Members</span>
+            </div>
+            <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+            <div class="flex items-center gap-1.5" title="Created At">
+              <i class="pi pi-calendar"></i>
+              <span>Created {{ formatDate(groupStore.currentGroup?.created_at) }}</span>
+            </div>
+            <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+            <div class="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-medium" title="Total Expense">
+              <i class="pi pi-wallet"></i>
+              <span>Total Expense ₹{{ totalExpense.toFixed(2) }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="flex gap-2 phone-lg:gap-4">
+    <div class="flex gap-2 phone-lg:gap-4 ml-13 md:ml-0">
       <BaseButton
         v-if="!isOwner"
         @click="isLeaveDialogOpen = true"
@@ -165,7 +174,9 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
+import { computed } from "vue";
 import { useGroupStore } from "~/stores/group";
+import { useExpenseStore } from "~/stores/expense";
 import { useToast } from "~/composables/useToast";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseDialog from "~/components/ui/BaseDialog.vue";
@@ -176,7 +187,20 @@ const props = defineProps<{
 
 const router = useRouter();
 const groupStore = useGroupStore();
+const expenseStore = useExpenseStore();
 const { addToast } = useToast();
+
+const totalExpense = computed(() => {
+  return expenseStore.expenses.reduce((acc, curr) => acc + Number(curr.amount), 0);
+});
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric"
+  });
+};
 
 const isEditing = ref(false);
 const isUpdating = ref(false);
