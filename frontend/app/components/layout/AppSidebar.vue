@@ -1,15 +1,6 @@
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 bg-slate-900/50 z-40 laptop:hidden"
-    @click="$emit('close')"
-  ></div>
-
   <aside
-    :class="[
-      'fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ease-in-out laptop:translate-x-0',
-      isOpen ? 'translate-x-0' : '-translate-x-full',
-    ]"
+    class="fixed top-0 left-0 z-50 h-screen w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-800 hidden laptop:flex flex-col"
   >
     <div
       class="h-16 flex items-center px-6 border-b border-slate-200 dark:border-slate-700"
@@ -85,14 +76,6 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/auth";
-
-defineProps<{
-  isOpen: boolean;
-}>();
-
-defineEmits<{
-  close: [];
-}>();
 
 const authStore = useAuthStore();
 

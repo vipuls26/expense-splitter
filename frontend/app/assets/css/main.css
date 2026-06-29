@@ -1,6 +1,8 @@
 @import "tailwindcss";
+@import "@nuxt/ui";
 
 @custom-variant dark (&:is(.dark *));
+
 @theme {
   /* mobile screen */
   --breakpoint-phone-s: 320px;
@@ -16,20 +18,36 @@
 }
 
 @layer base {
+
   /* Fix Chrome's ugly autofill background */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important; /* Solid white background */
-    -webkit-text-fill-color: #0f172a !important; /* Default light mode text */
+    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+    /* Solid white background */
+    -webkit-text-fill-color: #0f172a !important;
+    /* Default light mode text */
   }
 
   .dark input:-webkit-autofill,
   .dark input:-webkit-autofill:hover,
   .dark input:-webkit-autofill:focus,
   .dark input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px #020617 inset !important; /* Solid slate-950 background */
-    -webkit-text-fill-color: #f1f5f9 !important; /* Dark mode slate-100 text */
+    -webkit-box-shadow: 0 0 0px 1000px #020617 inset !important;
+    /* Solid slate-950 background */
+    -webkit-text-fill-color: #f1f5f9 !important;
+    /* Dark mode slate-100 text */
   }
+}
+
+/* Page Transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.99);
 }

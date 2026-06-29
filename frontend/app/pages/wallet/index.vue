@@ -100,11 +100,19 @@
 
       <div
         v-if="walletStore.isLoading && !walletStore.transactions.length"
-        class="p-8 text-center text-slate-500"
+        class="divide-y divide-slate-200 dark:divide-slate-800"
       >
-        <i class="pi pi-spin pi-spinner text-2xl"></i>
+        <div v-for="i in 4" :key="i" class="flex items-center justify-between p-4 sm:p-6 bg-white dark:bg-slate-900">
+           <div class="space-y-2">
+             <BaseSkeleton width="7rem" height="1.25rem" />
+             <BaseSkeleton width="10rem" height="0.875rem" />
+           </div>
+           <div class="space-y-2 flex flex-col items-end">
+             <BaseSkeleton width="5rem" height="1.25rem" />
+             <BaseSkeleton width="4rem" height="0.875rem" />
+           </div>
+        </div>
       </div>
-
       <div
         v-else-if="!walletStore.transactions.length"
         class="p-8 text-center text-slate-500"
@@ -214,6 +222,7 @@ import { onMounted } from "vue";
 import { useWalletStore } from "~/stores/wallet";
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";

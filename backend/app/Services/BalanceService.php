@@ -36,17 +36,9 @@ class BalanceService
 
         $data = $this->prepareSettlementData($balances);
 
-        $debtors = $data['debtors'];
-        $creditors = $data['creditors'];
-
-        $this->sortSettlementData(
-            $debtors,
-            $creditors
-        );
-
         return $this->generateSettlements(
-            $debtors,
-            $creditors
+            $data['debtors'],
+            $data['creditors']
         );
     }
 
@@ -153,18 +145,13 @@ class BalanceService
             }
         }
 
+        usort($debtors, fn ($a, $b) => $b['amount'] <=> $a['amount']);
+        usort($creditors, fn ($a, $b) => $b['amount'] <=> $a['amount']);
+
         return [
             'debtors' => $debtors,
             'creditors' => $creditors,
         ];
-    }
-
-    private function sortSettlementData(
-        array &$debtors,
-        array &$creditors
-    ): void {
-        usort($debtors, fn ($a, $b) => $b['amount'] <=> $a['amount']);
-        usort($creditors, fn ($a, $b) => $b['amount'] <=> $a['amount']);
     }
 
     private function generateSettlements(

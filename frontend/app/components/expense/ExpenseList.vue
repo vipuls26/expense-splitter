@@ -28,14 +28,21 @@
 
     <div
       v-if="expenseStore.isLoading && expenseStore.expenses.length === 0"
-      class="p-10 text-center"
+      class="divide-y divide-slate-100 dark:divide-slate-800"
     >
-      <i
-        class="pi pi-spinner pi-spin text-emerald-600 dark:text-emerald-400 text-2xl mb-3"
-      ></i>
-      <p class="text-slate-500 dark:text-slate-400 text-sm">
-        Loading expenses...
-      </p>
+      <div v-for="i in 3" :key="i" class="p-4 tablet:p-6 flex flex-col tablet:flex-row tablet:items-center justify-between gap-4">
+        <div class="flex items-start gap-4 w-full tablet:w-auto">
+          <BaseSkeleton width="3rem" height="3rem" className="rounded-lg shrink-0" />
+          <div class="space-y-2 flex-1 mt-1">
+            <BaseSkeleton width="12rem" height="1.25rem" />
+            <BaseSkeleton width="8rem" height="0.875rem" />
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-1 w-full tablet:w-auto">
+          <BaseSkeleton width="5rem" height="0.875rem" />
+          <BaseSkeleton width="4rem" height="1.25rem" />
+        </div>
+      </div>
     </div>
 
     <div
@@ -81,11 +88,20 @@
           </div>
 
           <div>
-            <h4
-              class="font-semibold text-slate-900 dark:text-slate-100 text-base mb-1"
-            >
-              {{ expense.description }}
-            </h4>
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="font-semibold text-slate-900 dark:text-slate-100 text-base">
+                {{ expense.description }}
+              </h4>
+              <span 
+                v-if="expense.expense_category"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold text-white uppercase tracking-wider shadow-sm"
+                :style="{ backgroundColor: expense.expense_category.color || '#94a3b8' }"
+                title="Expense Category"
+              >
+                <i :class="[expense.expense_category.icon, 'text-[9px]']"></i>
+                {{ expense.expense_category.name }}
+              </span>
+            </div>
             <div
               class="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-1.5"
             >
@@ -157,6 +173,7 @@ import { useToast } from "~/composables/useToast";
 import type { Id } from "~/types/common";
 import type { Expense } from "~/types/expense";
 import BaseDialog from "~/components/ui/BaseDialog.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 
 const props = defineProps<{
   groupId: Id;

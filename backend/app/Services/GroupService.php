@@ -2,7 +2,15 @@
 
 namespace App\Services;
 
+use App\Events\group\GroupCreated;
+use App\Events\group\GroupDeleted;
+use App\Events\group\GroupUpdated;
+use App\Events\member\MemberAdded;
+use App\Events\member\MemberLeftGroup;
+use App\Events\member\MemberRemoved;
+use App\Http\Resources\GroupResource;
 use App\Models\Group;
+use App\Models\User;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -18,7 +26,8 @@ class GroupService
         private GroupRepositoryInterface $groupRepository,
         private UserRepositoryInterface $userRepository,
         private BalanceService $balanceService
-    ) {}
+    ) {
+    }
 
     // Check if the given user is the owner of the group
     private function isOwner(Group $group, int $userId): bool
@@ -46,6 +55,11 @@ class GroupService
                 'owner'
             );
 
+            $group->load('creator', 'members');
+            $resource = new GroupResource($group);
+
+            broadcast(new GroupCreated($resource->resolve(), $userId))->toOthers();
+
             return $group;
         });
     }
@@ -55,7 +69,7 @@ class GroupService
     {
         $group = $this->groupRepository->findById($id);
 
-        if (! $group->members->contains('id', $userId)) {
+        if (!$group->members->contains('id', $userId)) {
             throw new AuthorizationException(
                 'Unauthorized access to group'
             );
@@ -69,10 +83,17 @@ class GroupService
     {
         $this->getGroupById($id, $userId);
 
-        return $this->groupRepository->update(
+        $updatedGroup = $this->groupRepository->update(
             $id,
             $data
         );
+
+        $updatedGroup->load('creator', 'members');
+        $resource = new GroupResource($updatedGroup);
+
+        broadcast(new GroupUpdated($id, $resource->resolve()))->toOthers();
+
+        return $updatedGroup;
     }
 
     // Delete a group — only the creator can do this
@@ -80,7 +101,7 @@ class GroupService
     {
         $group = $this->getGroupById($id, $userId);
 
-        if (! $this->isOwner($group, $userId)) {
+        if (!$this->isOwner($group, $userId)) {
             throw new AuthorizationException(
                 'Only the creator can delete this group'
             );
@@ -93,7 +114,12 @@ class GroupService
             );
         }
 
-        return $this->groupRepository->delete($id);
+        $memberIds = $group->members->pluck('id')->toArray();
+        $deleted = $this->groupRepository->delete($id);
+        if ($deleted) {
+            broadcast(new GroupDeleted($id, $memberIds))->toOthers();
+        }
+        return $deleted;
     }
 
     // Add a new member to the group using their phone number
@@ -109,7 +135,7 @@ class GroupService
 
         $userToAdd = $this->userRepository->findByPhone($phone);
 
-        if (! $userToAdd) {
+        if (!$userToAdd) {
             throw new ModelNotFoundException(
                 'User with this phone number does not exist'
             );
@@ -127,11 +153,26 @@ class GroupService
             );
         }
 
-        return $this->groupRepository->addMember(
+        $result = $this->groupRepository->addMember(
             $groupId,
             $userToAdd->id,
             'member'
         );
+
+        $memberData = [
+            'id' => $userToAdd->id,
+            'name' => $userToAdd->name,
+            'phone_no' => $userToAdd->phone_no,
+            'role' => 'member',
+        ];
+
+        broadcast(new MemberAdded($groupId, $memberData))->toOthers();
+        $group->load('creator', 'members');
+        $resource = new GroupResource($group);
+
+        broadcast(new GroupCreated($resource->resolve(), $userToAdd->id))->toOthers();
+
+        return $result;
     }
 
     // Remove a specific member from the group — owner or the member themselves can do this
@@ -145,7 +186,7 @@ class GroupService
             $userId
         );
 
-        if (! $this->isOwner($group, $userId) && $memberId !== $userId) {
+        if (!$this->isOwner($group, $userId) && $memberId !== $userId) {
             throw new AuthorizationException(
                 'Unauthorized to remove member'
             );
@@ -157,7 +198,7 @@ class GroupService
             );
         }
 
-        if (! $group->members->contains('id', $memberId)) {
+        if (!$group->members->contains('id', $memberId)) {
             throw new ModelNotFoundException(
                 'Member not found in group'
             );
@@ -170,10 +211,16 @@ class GroupService
             );
         }
 
-        return $this->groupRepository->removeMember(
+        $result = $this->groupRepository->removeMember(
             $groupId,
             $memberId
         );
+
+        $user = User::find($memberId);
+        $remainingMemberIds = $result->members->pluck('id')->toArray();
+        broadcast(new MemberRemoved($groupId, $memberId, $user ? $user->name : 'Unknown', $remainingMemberIds))->toOthers();
+
+        return $result;
     }
 
     // Let a member exit a group on their own — owner must delete instead
@@ -203,5 +250,10 @@ class GroupService
             $groupId,
             $userId
         );
+
+        $user = User::find($userId);
+        $group = $this->groupRepository->findById($groupId);
+        $remainingMemberIds = $group->members->pluck('id')->toArray();
+        broadcast(new MemberLeftGroup($groupId, $userId, $user ? $user->name : 'Unknown', $remainingMemberIds))->toOthers();
     }
 }

@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use App\Events\expense\ExpenseCreated;
+use App\Events\expense\ExpenseDeleted;
+use App\Events\settlement\SettlementCompleted;
+use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
 use App\Models\Group;
 use App\Models\User;
@@ -53,10 +57,17 @@ class ExpenseService
             $this->walletService->payExpense($payer, $amount, 'Paid for expense: '.$data['description']);
         }
 
-        return $this->expenseRepository->create(
+        $expense = $this->expenseRepository->create(
             $expenseData,
             $splits
         );
+
+        $expense->load('splits.user', 'payer', 'expenseCategory');
+        $resource = new ExpenseResource($expense);
+
+        broadcast(new ExpenseCreated($groupId, $resource->resolve()))->toOthers();
+
+        return $expense;
     }
 
     public function createSettlement(int $groupId, int $userId, int $toUserId, float $amount): Expense
@@ -78,7 +89,14 @@ class ExpenseService
         $payee = User::findOrFail($toUserId);
         $this->walletService->processSettlement($payer, $payee, $amount, 'Settlement payment');
 
-        return $this->createExpense($groupId, $data, $userId);
+        $expense = $this->createExpense($groupId, $data, $userId);
+
+        $expense->load('splits.user', 'payer', 'expenseCategory');
+        $resource = new ExpenseResource($expense);
+
+        broadcast(new SettlementCompleted($groupId, $resource->resolve()))->toOthers();
+
+        return $expense;
     }
 
     public function getGroupExpenses(
@@ -116,7 +134,11 @@ class ExpenseService
             $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: '.$expense->description);
         }
 
-        return $this->expenseRepository->delete($expense);
+        $deleted = $this->expenseRepository->delete($expense);
+        if ($deleted) {
+            broadcast(new ExpenseDeleted($expense->group_id, $expenseId))->toOthers();
+        }
+        return $deleted;
     }
 
     private function getAuthorizedGroup(
@@ -193,6 +215,7 @@ class ExpenseService
             'paid_by' => $data['paid_by'] ?? $userId,
             'amount' => $amount,
             'description' => $data['description'],
+            'expense_category_id' => $data['expense_category_id'] ?? null,
             'is_settlement' => $data['is_settlement'] ?? false,
             'date' => $data['date'] ?? now(),
         ];

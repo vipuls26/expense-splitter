@@ -12,6 +12,13 @@ export const useApi = () => {
       }
       headers.set("Accept", "application/json");
 
+      if (typeof window !== "undefined" && window.Echo) {
+        const socketId = window.Echo.socketId();
+        if (socketId) {
+          headers.set("X-Socket-ID", socketId);
+        }
+      }
+
       options.headers = headers;
     },
   });

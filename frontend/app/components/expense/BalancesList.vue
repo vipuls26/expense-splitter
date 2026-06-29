@@ -2,16 +2,30 @@
   <div class="space-y-6">
     <div
       v-if="settlementStore.isLoading && !settlementStore.balances.length"
-      class="flex justify-center py-10"
+      class="space-y-8"
     >
-      <i class="pi pi-spin pi-spinner text-2xl text-slate-400"></i>
+      <section>
+        <BaseSkeleton width="8rem" height="1rem" className="mb-4" />
+        <div class="space-y-3">
+          <div v-for="i in 2" :key="i" class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-3">
+              <BaseSkeleton width="2.5rem" height="2.5rem" className="rounded-full shrink-0" />
+              <div class="space-y-2">
+                <BaseSkeleton width="6rem" height="1rem" />
+                <BaseSkeleton width="4rem" height="1.25rem" />
+              </div>
+            </div>
+            <BaseSkeleton width="5rem" height="2rem" className="rounded-md" />
+          </div>
+        </div>
+      </section>
     </div>
 
     <div
       v-else-if="!settlementStore.balances.length"
-      class="text-center py-10 border border-slate-100 rounded-lg bg-white"
+      class="text-center py-6 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700"
     >
-      <p class="text-slate-500 text-sm">No balances yet. Add some expenses!</p>
+      <p class="text-sm">No balances yet. Add some expenses to get started!</p>
     </div>
 
     <div v-else class="space-y-8">
@@ -26,19 +40,19 @@
           <div
             v-for="debt in myDebts"
             :key="`debt-${debt.to.id}`"
-            class="flex items-center justify-between bg-red-50 p-4 rounded-lg border border-red-100"
+            class="flex items-center justify-between bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-100 dark:border-red-900/30"
           >
             <div class="flex items-center gap-3">
               <div
-                class="h-10 w-10 rounded-full bg-red-200 text-red-700 flex items-center justify-center font-bold"
+                class="h-10 w-10 rounded-full bg-red-200 dark:bg-red-900/50 text-red-700 dark:text-red-400 flex items-center justify-center font-bold"
               >
                 {{ debt.to.name.charAt(0).toUpperCase() }}
               </div>
               <div>
-                <p class="text-sm font-medium text-slate-900">
+                <p class="text-sm font-medium text-slate-900 dark:text-slate-100">
                   You owe {{ debt.to.name }}
                 </p>
-                <p class="text-lg font-bold text-red-600">
+                <p class="text-lg font-bold text-red-600 dark:text-red-400">
                   ₹{{ debt.amount.toFixed(2) }}
                 </p>
               </div>
@@ -55,19 +69,19 @@
           <div
             v-for="debt in debtsToMe"
             :key="`credit-${debt.from.id}`"
-            class="flex items-center justify-between bg-emerald-50 p-4 rounded-lg border border-emerald-100"
+            class="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-100 dark:border-emerald-900/30"
           >
             <div class="flex items-center gap-3">
               <div
-                class="h-10 w-10 rounded-full bg-emerald-200 text-emerald-700 flex items-center justify-center font-bold"
+                class="h-10 w-10 rounded-full bg-emerald-200 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold"
               >
                 {{ debt.from.name.charAt(0).toUpperCase() }}
               </div>
               <div>
-                <p class="text-sm font-medium text-slate-900">
+                <p class="text-sm font-medium text-slate-900 dark:text-slate-100">
                   {{ debt.from.name }} owes you
                 </p>
-                <p class="text-lg font-bold text-emerald-600">
+                <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                   ₹{{ debt.amount.toFixed(2) }}
                 </p>
               </div>
@@ -84,7 +98,7 @@
           Overall Balances
         </h3>
         <div
-          class="bg-white rounded-lg border border-slate-100 divide-y divide-slate-100"
+          class="bg-white dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700"
         >
           <div
             v-for="data in sortedBalances"
@@ -93,11 +107,11 @@
           >
             <div class="flex items-center gap-3">
               <div
-                class="h-8 w-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs"
+                class="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-xs"
               >
                 {{ data.user.name.charAt(0).toUpperCase() }}
               </div>
-              <p class="text-sm font-medium text-slate-900">
+              <p class="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {{
                   data.user.id === authStore.user?.id ? "You" : data.user.name
                 }}
@@ -105,9 +119,9 @@
             </div>
             <div
               :class="{
-                'text-emerald-600': data.balance > 0,
-                'text-red-600': data.balance < 0,
-                'text-slate-400': data.balance === 0,
+                'text-emerald-600 dark:text-emerald-400': data.balance > 0,
+                'text-red-600 dark:text-red-400': data.balance < 0,
+                'text-slate-400 dark:text-slate-500': data.balance === 0,
               }"
               class="font-bold"
             >
@@ -142,6 +156,7 @@ import { useWalletStore } from "~/stores/wallet";
 import { useToast } from "~/composables/useToast";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseDialog from "~/components/ui/BaseDialog.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import type { Id } from "~/types/common";
 import type { Settlement } from "~/types/settlement";
 
