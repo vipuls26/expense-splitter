@@ -6,7 +6,7 @@
       v-for="item in navigation"
       :key="item.name"
       :to="item.href"
-      class="flex flex-col items-center justify-center py-2 px-4 min-w-[4rem] text-[10px] font-medium transition-colors"
+      class="flex flex-col items-center justify-center py-2 px-4 min-w-16 text-[10px] font-medium transition-colors"
       :class="[
         (item.href === '/' ? $route.path === '/' : $route.path.startsWith(item.href))
           ? 'text-slate-800 dark:text-slate-200'
