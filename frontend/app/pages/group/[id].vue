@@ -26,12 +26,12 @@
 
       <!-- Tabs Navigation -->
       <div
-        class="bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-xl flex overflow-x-auto hide-scrollbar shadow-inner border border-slate-200/50 dark:border-slate-700/50">
+        class="flex overflow-x-auto hide-scrollbar border-b border-slate-200 dark:border-slate-700">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-          'flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-300 whitespace-nowrap',
+          'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold transition-colors whitespace-nowrap border-b-2',
           activeTab === tab.id
-            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-slate-200/50 dark:ring-slate-600/50'
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+            ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+            : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
         ]">
           <i :class="tab.icon"></i>
           {{ tab.name }}
@@ -64,11 +64,19 @@
       </div>
     </div>
 
-    <div v-else class="text-center py-20">
-      <h2 class="text-xl font-medium text-slate-900 dark:text-slate-100 mb-2">
-        Group not found
-      </h2>
-      <BaseButton @click="$router.push('/')" variant="outline">Go to Dashboard</BaseButton>
+    <div v-else class="flex justify-center text-center py-20">
+      <div>
+        <h2 class="text-xl font-medium text-slate-900 dark:text-slate-100 mb-2 pb-5">
+          Group not found
+        </h2>
+
+        <BaseLink url="/" variant="solid">
+          Go to Dashboard
+        </BaseLink>
+
+
+      </div>
+
     </div>
 
     <!-- Add Expense Modal (Lazy Loaded) -->
@@ -92,7 +100,7 @@ import { useBudgetStore } from "~/stores/budget";
 import { useToast } from "~/composables/useToast";
 import { useNuxtApp } from "#app";
 import { onMounted, onUnmounted } from "vue";
-import BaseButton from "~/components/ui/BaseButton.vue";
+import BaseLink from "~/components/ui/BaseLink.vue";
 import ExpenseList from "~/components/expense/ExpenseList.vue";
 import BalancesList from "~/components/expense/BalancesList.vue";
 import GroupHeader from "~/components/group/GroupHeader.vue";

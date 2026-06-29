@@ -1,5 +1,5 @@
 <template>
-  <div class="py-8 px-4 tablet:px-6 max-w-2xl">
+  <div class="py-8 px-4 tablet:px-6 max-w-2xl mx-auto">
     <div class="mb-10 flex items-center justify-between">
       <h1 class="text-2xl font-semibold dark:text-slate-100">Create Group</h1>
       <BaseButton

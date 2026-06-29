@@ -5,21 +5,21 @@
     <div
       class="px-4 phone-lg:px-6 py-4 phone-lg:py-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50"
     >
-      <div>
+      <div class="min-w-0 pr-2">
         <h2
-          class="text-lg phone-lg:text-xl font-bold text-slate-900 dark:text-slate-100"
+          class="text-lg phone-lg:text-xl font-bold text-slate-900 dark:text-slate-100 truncate"
         >
           Group Expenses
         </h2>
         <p
-          class="text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mt-0.5 phone-lg:mt-1"
+          class="text-xs phone-lg:text-sm text-slate-500 dark:text-slate-400 mt-0.5 phone-lg:mt-1 truncate"
         >
           Track shared costs and bills
         </p>
       </div>
       <button
         @click="emit('add-expense')"
-        class="inline-flex items-center gap-1.5 phone-lg:gap-2 rounded-md phone-lg:rounded-lg bg-emerald-600 px-3 phone-lg:px-4 py-1.5 phone-lg:py-2 text-xs phone-lg:text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors"
+        class="inline-flex items-center gap-1.5 phone-lg:gap-2 rounded-md phone-lg:rounded-lg bg-emerald-600 px-3 phone-lg:px-4 py-1.5 phone-lg:py-2 text-xs phone-lg:text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors whitespace-nowrap shrink-0"
       >
         <i class="pi pi-plus text-[10px] phone-lg:text-xs"></i>
         Add Expense
