@@ -41,5 +41,5 @@ class ExpenseRepository implements ExpenseRepositoryInterface
         return $expense->delete();
     }
 
-    private const relationsToLoad = ['payer', 'splits.user'];
+    private const relationsToLoad = ['payer', 'splits.user', 'expenseCategory'];
 }

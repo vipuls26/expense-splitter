@@ -22,6 +22,8 @@ class ExpenseResource extends JsonResource
 
             'date' => $this->date,
 
+            'expense_category' => $this->expense_category_id ? new ExpenseCategoryResource($this->expenseCategory) : null,
+
             'paid_by' => [
                 'id' => $this->payer?->id,
                 'name' => $this->payer?->name,

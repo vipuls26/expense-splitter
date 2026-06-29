@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ["primeicons/primeicons.css", "~/assets/css/main.css"],
   // register nuxt module
-  modules: ["@pinia/nuxt", "@nuxtjs/color-mode"],
+  modules: ["@pinia/nuxt", "@nuxtjs/color-mode","@nuxt/ui"],
   colorMode: {
     classSuffix: "",
   },
@@ -16,7 +16,14 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: "http://localhost:8000/api",
+      reverbKey: "cx2293mvi2vsgzl1ku6d",
+      reverbHost: "localhost",
+      reverbPort: 8080,
+      reverbScheme: "http",
     },
+  },
+  app: {
+    pageTransition: { name: 'page', mode: 'out-in' },
   },
   vite: {
     plugins: [tailwindcss()],

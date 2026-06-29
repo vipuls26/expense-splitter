@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enum\WalletTransactionType;
-// Removed API Resource imports
+use App\Events\wallet\WalletDeposited;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Repositories\WalletRepository;
@@ -13,14 +13,16 @@ use RuntimeException;
 
 class WalletService
 {
-    public function __construct(private WalletRepository $walletRepository) {}
+    public function __construct(private WalletRepository $walletRepository)
+    {
+    }
 
     // get wallet
     public function getWallet(User $user): Wallet
     {
         $wallet = $this->walletRepository->findByUserId($user->id);
 
-        if (! $wallet) {
+        if (!$wallet) {
             throw new RuntimeException('wallet not found');
         }
 
@@ -44,14 +46,18 @@ class WalletService
 
             $this->walletRepository->updateBalance($wallet, $after);
 
-            $this->walletRepository->createTransaction([
+            $transactionData = [
                 'wallet_id' => $wallet->id,
                 'type' => WalletTransactionType::Deposit,
                 'amount' => $amount,
                 'balance_before' => $before,
                 'balance_after' => $after,
                 'description' => 'Wallet top-up',
-            ]);
+            ];
+
+            $transactionModel = $this->walletRepository->createTransaction($transactionData);
+
+            broadcast(new WalletDeposited($user->id, $after, $transactionModel->toArray()))->toOthers();
 
             return $wallet->refresh();
         });
@@ -121,7 +127,7 @@ class WalletService
                 'amount' => $amount,
                 'balance_before' => $payerBefore,
                 'balance_after' => $payerAfter,
-                'description' => $description.' to '.$payee->name,
+                'description' => $description . ' to ' . $payee->name,
             ]);
 
             // Credit to payee
@@ -134,7 +140,7 @@ class WalletService
                 'amount' => $amount,
                 'balance_before' => $payeeBefore,
                 'balance_after' => $payeeAfter,
-                'description' => $description.' from '.$payer->name,
+                'description' => $description . ' from ' . $payer->name,
             ]);
         });
     }
@@ -172,7 +178,7 @@ class WalletService
     {
         $wallet = $this->walletRepository->findByUserId($user->id);
 
-        if (! $wallet) {
+        if (!$wallet) {
             throw new RuntimeException('wallet not found');
         }
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['group_id', 'paid_by', 'amount', 'description', 'is_settlement', 'date'])]
+#[Fillable(['group_id', 'paid_by', 'expense_category_id', 'amount', 'description', 'is_settlement', 'date'])]
 class Expense extends Model
 {
     public function casts(): array
@@ -32,5 +32,10 @@ class Expense extends Model
     public function splits(): HasMany
     {
         return $this->hasMany(ExpenseSplit::class);
+    }
+
+    public function expenseCategory(): BelongsTo
+    {
+        return $this->belongsTo(ExpenseCategory::class);
     }
 }

@@ -25,6 +25,7 @@ class StoreExpenseRequest extends FormRequest
         return [
             'amount' => ['required', 'numeric', 'gt:0'],
             'description' => ['required', 'string', 'max:255'],
+            'expense_category_id' => ['required', 'exists:expense_categories,id'],
             'paid_by' => ['nullable', 'exists:users,id'],
             'date' => ['nullable', 'date'],
 

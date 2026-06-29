@@ -1,5 +1,6 @@
 import type { Id } from "./common";
 import type { BaseUser } from "./user";
+import type { ExpenseCategory } from "./expenseCategory";
 
 export interface ExpenseSplit {
   user: BaseUser;
@@ -12,6 +13,7 @@ export interface Expense {
   amount: string;
   description: string;
   is_settlement: boolean;
+  expense_category?: ExpenseCategory;
   date: string;
   paid_by: BaseUser;
   splits: ExpenseSplit[];
@@ -21,6 +23,7 @@ export interface Expense {
 export interface CreateExpensePayload {
   amount: number;
   description: string;
+  expense_category_id: Id;
   paid_by?: Id;
   date?: string;
 
