@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/expense-categories', [ExpenseCategoryController::class, 'index']);
 
     // Group Routes
+    // apiResource create api crud rotues automatically [ i.e => index(), store(), show(), update(), destory() ]
     Route::apiResource('groups', GroupController::class);
     Route::post('/groups/{id}/members', [GroupController::class, 'addMember']);
     Route::delete('/groups/{id}/members/{userId}', [GroupController::class, 'removeMember']);
@@ -50,10 +51,13 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+
+// route for expense
 Route::middleware('auth:sanctum')->prefix('/expenses')->group(function () {
     Route::delete('/{id}', [ExpenseController::class, 'destroy']);
 });
 
+// route for budget
 Route::middleware('auth:sanctum')->prefix('/budgets')->group(function () {
     Route::put('/{id}', [BudgetController::class, 'update']);
     Route::delete('/{id}', [BudgetController::class, 'destroy']);

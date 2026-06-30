@@ -15,10 +15,13 @@ class AuthController extends Controller
     // authenticate user and return token
     public function login(LoginRequest $request)
     {
+        // validate user input
         $data = $request->validated();
 
+        // call authService's login method with input argument
         $result = $this->authService->login($data);
 
+        // return json response
         return response()->json([
             'message' => 'User logged in successfully',
             'data' => $result,
@@ -30,10 +33,13 @@ class AuthController extends Controller
     // register new user and return token
     public function register(RegisterRequest $request)
     {
+        // validate user input
         $data = $request->validated();
 
+        // call authService's register method with input argument
         $result = $this->authService->register($data);
 
+        // return json response
         return response()->json([
             'message' => 'User registered successfully',
             'data' => $result,
@@ -45,8 +51,10 @@ class AuthController extends Controller
     // log user out and revoke token
     public function logout(Request $request)
     {
+        // call authService's logout method with input argument
         $this->authService->logout($request->user());
 
+        // return json response
         return response()->json([
             'message' => 'User logged out successfully',
             'status' => 200,
@@ -57,6 +65,7 @@ class AuthController extends Controller
     // get current authenticated user details
     public function me(Request $request)
     {
+        // return json response user information with valid token
         return response()->json([
             'data' => [
                 'user' => $request->user(),

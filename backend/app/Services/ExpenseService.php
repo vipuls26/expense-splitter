@@ -24,54 +24,54 @@ class ExpenseService
         private WalletService $walletService
     ) {}
 
-    public function createExpense(
-        int $groupId,
-        array $data,
-        int $userId
-    ): Expense {
+    // create expense
+    public function createExpense(int $groupId, array $data, int $userId): Expense
+    {
+        // check if group exist and user belong to group
+        $group = $this->getAuthorizedGroup($groupId, $userId);
 
-        $group = $this->getAuthorizedGroup(
-            $groupId,
-            $userId
-        );
-
+        // convert amount in float
         $amount = (float) $data['amount'];
+
+        // get split amount
         $splits = $data['splits'];
 
-        $this->validateSplits(
-            $group,
-            $amount,
-            $splits
-        );
+        // make equal split to amount
+        $this->validateSplits($group, $amount, $splits);
 
-        $expenseData = $this->prepareExpenseData(
-            $groupId,
-            $data,
-            $amount,
-            $userId
-        );
+        // call prepareExpenseDaa with argument of group_id, data, amount, user_id
+        $expenseData = $this->prepareExpenseData($groupId, $data, $amount, $userId);
 
+        // check if
         if (empty($data['is_settlement'])) {
+            // check who pays for expense
             $payerId = $data['paid_by'] ?? $userId;
+            // find user who pays
             $payer = User::findOrFail($payerId);
-            $this->walletService->payExpense($payer, $amount, 'Paid for expense: '.$data['description']);
+
+            // call walletService's payExpense with argument of payer, amount and data
+            $this->walletService->payExpense($payer, $amount, 'Paid for expense: ' . $data['description']);
         }
 
-        $expense = $this->expenseRepository->create(
-            $expenseData,
-            $splits
-        );
+        // call expenseRepository's create with argument for expenseData and splits
+        $expense = $this->expenseRepository->create($expenseData, $splits);
 
+        // eagerly load model for payer and expenseCategory
         $expense->load('splits.user', 'payer', 'expenseCategory');
+
+        // prepare expense for broadcast event
         $resource = new ExpenseResource($expense);
 
+        // broadcast event to other member of group
         broadcast(new ExpenseCreated($groupId, $resource->resolve()))->toOthers();
 
         return $expense;
     }
 
+    // create settlement
     public function createSettlement(int $groupId, int $userId, int $toUserId, float $amount): Expense
     {
+        // create expense
         $data = [
             'paid_by' => $userId,
             'amount' => $amount,
@@ -85,45 +85,55 @@ class ExpenseService
             ],
         ];
 
+        // find user who is paying money
         $payer = User::findOrFail($userId);
+
+        // find user who is recieving money
         $payee = User::findOrFail($toUserId);
+
+        // call walletService's processSettlement with argument for payer, payee, amount , type
         $this->walletService->processSettlement($payer, $payee, $amount, 'Settlement payment');
 
+        // call createExpense method with argument for group_id , data, user_id
         $expense = $this->createExpense($groupId, $data, $userId);
 
+        // eagerly load related model
         $expense->load('splits.user', 'payer', 'expenseCategory');
+
+        // prepare data for broadcast
         $resource = new ExpenseResource($expense);
 
+        // broadcast event to other member of group
         broadcast(new SettlementCompleted($groupId, $resource->resolve()))->toOthers();
 
         return $expense;
     }
 
-    public function getGroupExpenses(
-        int $groupId,
-        int $userId
-    ): Collection {
+    // get group expense
+    public function getGroupExpenses(int $groupId, int $userId): Collection
+    {
+        // check if group exist and user belong to group
+        $this->getAuthorizedGroup($groupId, $userId);
 
-        $this->getAuthorizedGroup(
-            $groupId,
-            $userId
-        );
-
+        // call expenseRepository's getExpensesForGroup with argument of group_id
         return $this->expenseRepository->getExpensesForGroup($groupId);
     }
 
-    public function deleteExpense(
-        int $expenseId,
-        int $userId
-    ): bool {
+    // delte expense
+    public function deleteExpense(int $expenseId, int $userId): bool
+    {
+        // find expense by id
         $expense = $this->expenseRepository->findById($expenseId);
 
+        // check if expense exist in db
         if (! $expense) {
             throw new ModelNotFoundException('Expense not found');
         }
 
+        // check if logining user is authorized for delete expense
         $this->authorizeExpenseDeletion($expense, $userId);
 
+        // check if expense is settle or not
         if ($expense->is_settlement) {
             $payer = User::findOrFail($expense->paid_by);
             $payee = User::findOrFail($expense->splits->first()->user_id);
@@ -131,7 +141,7 @@ class ExpenseService
             $this->walletService->processSettlement($payee, $payer, $expense->amount, 'Reversed settlement');
         } else {
             $payer = User::findOrFail($expense->paid_by);
-            $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: '.$expense->description);
+            $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: ' . $expense->description);
         }
 
         $deleted = $this->expenseRepository->delete($expense);
@@ -141,10 +151,8 @@ class ExpenseService
         return $deleted;
     }
 
-    private function getAuthorizedGroup(
-        int $groupId,
-        int $userId
-    ): Group {
+    private function getAuthorizedGroup(int $groupId, int $userId): Group
+    {
         $group = $this->groupRepository->findById($groupId);
 
         if (! $group) {
@@ -158,16 +166,9 @@ class ExpenseService
         return $group;
     }
 
-    private function validateSplits(
-        Group $group,
-        float $amount,
-        array $splits
-    ): void {
-        $totalSplit = array_reduce(
-            $splits,
-            fn ($carry, $split) => $carry + (float) $split['amount_owed'],
-            0
-        );
+    private function validateSplits(Group $group, float $amount, array $splits): void
+    {
+        $totalSplit = array_reduce($splits, fn($carry, $split) => $carry + (float) $split['amount_owed'], 0);
 
         if (abs($amount - $totalSplit) > 0.01) {
             throw new InvalidArgumentException(
@@ -184,10 +185,8 @@ class ExpenseService
         }
     }
 
-    private function authorizeExpenseDeletion(
-        Expense $expense,
-        int $userId
-    ): void {
+    private function authorizeExpenseDeletion(Expense $expense, int $userId): void
+    {
         $group = $this->groupRepository->findById($expense->group_id);
 
         if (! $group) {
@@ -204,12 +203,8 @@ class ExpenseService
         }
     }
 
-    private function prepareExpenseData(
-        int $groupId,
-        array $data,
-        float $amount,
-        int $userId
-    ): array {
+    private function prepareExpenseData(int $groupId, array $data, float $amount, int $userId): array
+    {
         return [
             'group_id' => $groupId,
             'paid_by' => $data['paid_by'] ?? $userId,

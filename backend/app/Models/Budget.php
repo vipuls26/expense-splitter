@@ -11,9 +11,7 @@ class Budget extends Model
 {
     public function casts(): array
     {
-        return [
-            'amount' => 'float',
-        ];
+        return ['amount' => 'float',];
     }
 
     public function group(): BelongsTo
