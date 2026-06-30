@@ -94,7 +94,6 @@ import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseSelect from "~/components/ui/BaseSelect.vue";
 import { useAuthStore } from "~/stores/auth";
 import { useExpenseStore } from "~/stores/expense";
-import { useWalletStore } from "~/stores/wallet";
 import { useCategoryStore } from "~/stores/category";
 import { useToast } from "~/composables/useToast";
 import { onMounted } from "vue";
@@ -118,7 +117,6 @@ const emit = defineEmits<{
 
 const authStore = useAuthStore();
 const expenseStore = useExpenseStore();
-const walletStore = useWalletStore();
 const categoryStore = useCategoryStore();
 const { addToast } = useToast();
 
@@ -214,7 +212,6 @@ const onSubmit = handleSubmit(async (values) => {
     });
 
     if (response.success) {
-      await walletStore.fetchWallet();
       addToast("Expense added successfully!", "success");
       emit("expense-added");
       emit("close");

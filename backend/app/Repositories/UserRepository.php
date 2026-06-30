@@ -16,12 +16,14 @@ class UserRepository implements UserRepositoryInterface
     // retrieve user record by email
     public function findByEmail(string $email): ?User
     {
+        // query user by email
         return User::where('email', $email)->first();
     }
 
     // retrieve user record by phone number
     public function findByPhone(string $phone): ?User
     {
+        // query user by phone
         return User::where('phone_no', $phone)->first();
     }
 }

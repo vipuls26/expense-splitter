@@ -1,12 +1,7 @@
 import { useApi } from "~/composables/useApi";
 import type { ApiResponse } from "~/types/api";
 import type { Id } from "~/types/common";
-
-import type {
-  Balance,
-  Settlement,
-  SettlementResponse,
-} from "~/types/settlement";
+import type { Balance, Settlement, SettlementResponse } from "~/types/settlement";
 import { useExpenseStore } from "~/stores/expense";
 import { useGroupStore } from "~/stores/group";
 

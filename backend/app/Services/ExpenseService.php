@@ -8,7 +8,6 @@ use App\Events\settlement\SettlementCompleted;
 use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
 use App\Models\Group;
-use App\Models\User;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -20,9 +19,9 @@ class ExpenseService
 {
     public function __construct(
         private ExpenseRepositoryInterface $expenseRepository,
-        private GroupRepositoryInterface $groupRepository,
-        private WalletService $walletService
-    ) {}
+        private GroupRepositoryInterface $groupRepository
+    ) {
+    }
 
     // create expense
     public function createExpense(int $groupId, array $data, int $userId): Expense
@@ -42,16 +41,7 @@ class ExpenseService
         // call prepareExpenseDaa with argument of group_id, data, amount, user_id
         $expenseData = $this->prepareExpenseData($groupId, $data, $amount, $userId);
 
-        // check if
-        if (empty($data['is_settlement'])) {
-            // check who pays for expense
-            $payerId = $data['paid_by'] ?? $userId;
-            // find user who pays
-            $payer = User::findOrFail($payerId);
 
-            // call walletService's payExpense with argument of payer, amount and data
-            $this->walletService->payExpense($payer, $amount, 'Paid for expense: ' . $data['description']);
-        }
 
         // call expenseRepository's create with argument for expenseData and splits
         $expense = $this->expenseRepository->create($expenseData, $splits);
@@ -85,14 +75,7 @@ class ExpenseService
             ],
         ];
 
-        // find user who is paying money
-        $payer = User::findOrFail($userId);
 
-        // find user who is recieving money
-        $payee = User::findOrFail($toUserId);
-
-        // call walletService's processSettlement with argument for payer, payee, amount , type
-        $this->walletService->processSettlement($payer, $payee, $amount, 'Settlement payment');
 
         // call createExpense method with argument for group_id , data, user_id
         $expense = $this->createExpense($groupId, $data, $userId);
@@ -126,24 +109,13 @@ class ExpenseService
         $expense = $this->expenseRepository->findById($expenseId);
 
         // check if expense exist in db
-        if (! $expense) {
+        if (!$expense) {
             throw new ModelNotFoundException('Expense not found');
         }
 
         // check if logining user is authorized for delete expense
         $this->authorizeExpenseDeletion($expense, $userId);
-
-        // check if expense is settle or not
-        if ($expense->is_settlement) {
-            $payer = User::findOrFail($expense->paid_by);
-            $payee = User::findOrFail($expense->splits->first()->user_id);
-            // Reverse settlement: payee pays payer
-            $this->walletService->processSettlement($payee, $payer, $expense->amount, 'Reversed settlement');
-        } else {
-            $payer = User::findOrFail($expense->paid_by);
-            $this->walletService->refund($payer, $expense->amount, 'Refund for deleted expense: ' . $expense->description);
-        }
-
+        
         $deleted = $this->expenseRepository->delete($expense);
         if ($deleted) {
             broadcast(new ExpenseDeleted($expense->group_id, $expenseId))->toOthers();
@@ -153,13 +125,16 @@ class ExpenseService
 
     private function getAuthorizedGroup(int $groupId, int $userId): Group
     {
+        // find group by id
         $group = $this->groupRepository->findById($groupId);
 
-        if (! $group) {
+        // check if group exists
+        if (!$group) {
             throw new ModelNotFoundException('Group not found');
         }
 
-        if (! $group->members->contains('id', $userId)) {
+        // check if user is a member of the group
+        if (!$group->members->contains('id', $userId)) {
             throw new AuthorizationException('Unauthorized: You are not a member of this group');
         }
 
@@ -168,16 +143,19 @@ class ExpenseService
 
     private function validateSplits(Group $group, float $amount, array $splits): void
     {
+        // calculate total split amount
         $totalSplit = array_reduce($splits, fn($carry, $split) => $carry + (float) $split['amount_owed'], 0);
 
+        // verify total split matches expense amount
         if (abs($amount - $totalSplit) > 0.01) {
             throw new InvalidArgumentException(
                 'The sum of splits must exactly equal the total expense amount.'
             );
         }
 
+        // verify all split users are group members
         foreach ($splits as $split) {
-            if (! $group->members->contains('id', $split['user_id'])) {
+            if (!$group->members->contains('id', $split['user_id'])) {
                 throw new InvalidArgumentException(
                     'Cannot split expense with non-members.'
                 );
@@ -187,16 +165,21 @@ class ExpenseService
 
     private function authorizeExpenseDeletion(Expense $expense, int $userId): void
     {
+        // get group by expense group id
         $group = $this->groupRepository->findById($expense->group_id);
 
-        if (! $group) {
+        // check if group exists
+        if (!$group) {
             throw new ModelNotFoundException('Group not found');
         }
 
+        // check if user is the payer
         $isPayer = $expense->paid_by === $userId;
+        // check if user is the group owner
         $isOwner = $group->created_by === $userId;
 
-        if (! $isPayer && ! $isOwner) {
+        // authorize if user is payer or owner
+        if (!$isPayer && !$isOwner) {
             throw new AuthorizationException(
                 'Only the payer or the group owner can delete this expense.'
             );
@@ -205,6 +188,7 @@ class ExpenseService
 
     private function prepareExpenseData(int $groupId, array $data, float $amount, int $userId): array
     {
+        // return prepared expense data array
         return [
             'group_id' => $groupId,
             'paid_by' => $data['paid_by'] ?? $userId,

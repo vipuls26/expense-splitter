@@ -1,9 +1,5 @@
 import { useApi } from "~/composables/useApi";
-import type {
-  Group,
-  CreateGroupPayload,
-  UpdateGroupPayload,
-} from "~/types/group";
+import type { Group, CreateGroupPayload, UpdateGroupPayload } from "~/types/group";
 import type { ApiResponse, MessageResponse } from "~/types/api";
 import type { Id } from "~/types/common";
 

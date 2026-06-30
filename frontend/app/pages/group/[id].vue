@@ -51,11 +51,7 @@
           <BalancesList v-if="groupStore.currentGroup" :group-id="groupStore.currentGroup.id" />
         </div>
 
-        <!-- Budgets Tab -->
-        <div v-if="activeTab === 'budgets'" class="fade-in">
-          <GroupBudgets v-if="groupStore.currentGroup" :group-id="groupStore.currentGroup.id" :is-owner="isOwner"
-            @add-budget="handleAddBudget" @edit-budget="handleEditBudget" />
-        </div>
+
 
         <!-- Members Tab -->
         <div v-if="activeTab === 'members'" class="fade-in">
@@ -84,9 +80,7 @@
       :group-id="groupStore.currentGroup.id" :members="groupStore.currentGroup.members || []"
       @close="isExpenseModalOpen = false" />
 
-    <!-- Add Budget Modal (Lazy Loaded) -->
-    <AddBudgetModal v-if="isBudgetModalOpen && groupStore.currentGroup" :is-open="isBudgetModalOpen"
-      :group-id="groupStore.currentGroup.id" :budget-to-edit="budgetToEdit" @close="isBudgetModalOpen = false" />
+
   </div>
 </template>
 
@@ -96,7 +90,6 @@ import { useGroupStore } from "~/stores/group";
 import { useAuthStore } from "~/stores/auth";
 import { useExpenseStore } from "~/stores/expense";
 import { useSettlementStore } from "~/stores/settlement";
-import { useBudgetStore } from "~/stores/budget";
 import { useToast } from "~/composables/useToast";
 import { useNuxtApp } from "#app";
 import { onMounted, onUnmounted } from "vue";
@@ -105,12 +98,7 @@ import ExpenseList from "~/components/expense/ExpenseList.vue";
 import BalancesList from "~/components/expense/BalancesList.vue";
 import GroupHeader from "~/components/group/GroupHeader.vue";
 import GroupMembers from "~/components/group/GroupMembers.vue";
-import GroupBudgets from "~/components/budget/GroupBudgets.vue";
-import type { Budget } from "~/types/budget";
-import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
-
 const AddExpenseModal = defineAsyncComponent(() => import("~/components/expense/AddExpenseModal.vue"));
-const AddBudgetModal = defineAsyncComponent(() => import("~/components/budget/AddBudgetModal.vue"));
 
 definePageMeta({
   middleware: ["auth"],
@@ -118,11 +106,9 @@ definePageMeta({
 });
 
 const route = useRoute();
-const router = useRouter();
 const groupStore = useGroupStore();
 const expenseStore = useExpenseStore();
 const settlementStore = useSettlementStore();
-const budgetStore = useBudgetStore();
 const authStore = useAuthStore();
 const { addToast } = useToast();
 const { $echo } = useNuxtApp();
@@ -131,25 +117,12 @@ const isOwner = computed(
   () => authStore.user?.id == groupStore.currentGroup?.created_by,
 );
 const isExpenseModalOpen = ref(false);
-const isBudgetModalOpen = ref(false);
-const budgetToEdit = ref<Budget | null>(null);
-
-const handleAddBudget = () => {
-  budgetToEdit.value = null;
-  isBudgetModalOpen.value = true;
-};
-
-const handleEditBudget = (budget: Budget) => {
-  budgetToEdit.value = budget;
-  isBudgetModalOpen.value = true;
-};
 
 let subscribedGroupId: string | null = null;
 
 const tabs = [
   { id: 'expenses', name: 'Expenses', icon: 'pi pi-receipt' },
   { id: 'members', name: 'Members', icon: 'pi pi-users' },
-  { id: 'budgets', name: 'Budgets', icon: 'pi pi-chart-pie' },
   { id: 'balances', name: 'Balances', icon: 'pi pi-wallet' },
 
 
@@ -165,7 +138,6 @@ onMounted(() => {
 
     // Listen for real-time Reverb notifications
     if ($echo) {
-      // Prevent duplicate listeners during Hot Module Replacement (HMR) or navigation
       $echo.leave(`group.${groupId}`);
 
       $echo.private(`group.${groupId}`)
@@ -200,21 +172,6 @@ onMounted(() => {
           addToast(`Settlement completed`, "success");
           expenseStore.expenses.unshift(event.settlement); // assuming settlement is added to expenses feed
           settlementStore.recalculateBalances();
-        })
-        .listen(".BudgetCreated", (event: any) => {
-          budgetStore.budgets.push(event.budget);
-          addToast("New budget set", "success");
-        })
-        .listen(".BudgetUpdated", (event: any) => {
-          const index = budgetStore.budgets.findIndex(b => b.id === event.budget.id);
-          if (index !== -1) {
-            budgetStore.budgets[index] = event.budget;
-          }
-          addToast("Budget was updated", "info");
-        })
-        .listen(".BudgetDeleted", (event: any) => {
-          budgetStore.budgets = budgetStore.budgets.filter(b => b.id !== event.budgetId);
-          addToast("Budget was removed", "warning");
         });
     }
   }
@@ -227,30 +184,3 @@ onUnmounted(() => {
   }
 });
 </script>
-
-<style scoped>
-.fade-in {
-  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>

@@ -60,7 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useGroupStore } from "~/stores/group";
 import { useToast } from "~/composables/useToast";

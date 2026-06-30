@@ -1,13 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SettlementController;
-use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -31,9 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/groups/{id}/leave', [GroupController::class, 'leave']);
     Route::delete('/groups/{id}', [GroupController::class, 'destroy']);
 
-    // Budgets
-    Route::get('/groups/{id}/budgets', [BudgetController::class, 'index']);
-    Route::post('/groups/{id}/budgets', [BudgetController::class, 'store']);
+
 
     // Expenses
     Route::get('/groups/{id}/expenses', [ExpenseController::class, 'index']);
@@ -43,12 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/groups/{id}/balances', [SettlementController::class, 'getBalances']);
     Route::post('/groups/{id}/settle', [SettlementController::class, 'settleUp']);
 
-    // Wallet
-    Route::prefix('wallet')->group(function () {
-        Route::get('/', [WalletController::class, 'index']);
-        Route::post('/deposit', [WalletController::class, 'deposit']);
-        Route::get('/transactions', [WalletController::class, 'transactions']);
-    });
+
 });
 
 
@@ -57,8 +48,4 @@ Route::middleware('auth:sanctum')->prefix('/expenses')->group(function () {
     Route::delete('/{id}', [ExpenseController::class, 'destroy']);
 });
 
-// route for budget
-Route::middleware('auth:sanctum')->prefix('/budgets')->group(function () {
-    Route::put('/{id}', [BudgetController::class, 'update']);
-    Route::delete('/{id}', [BudgetController::class, 'destroy']);
-});
+

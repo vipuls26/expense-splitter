@@ -1,17 +1,10 @@
 <template>
-  <div
-    class="min-h-screen bg-slate-50 dark:bg-slate-900 flex transition-colors pb-16 laptop:pb-0"
-  >
-    <!-- Sidebar (Desktop Only) -->
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-900 flex transition-colors pb-16 laptop:pb-0">
     <AppSidebar />
 
-    <!-- Main Content Wrapper -->
-    <div
-      class="flex-1 flex flex-col min-w-0 laptop:pl-64 transition-all duration-300"
-    >
+    <div class="flex-1 flex flex-col min-w-0 laptop:pl-64 transition-all duration-300">
       <AppHeader :title="pageTitle" />
 
-      <!-- Page Content -->
       <main class="flex-1 overflow-x-hidden">
         <div class="max-w-7xl mx-auto w-full">
           <slot />
@@ -19,13 +12,12 @@
       </main>
     </div>
 
-    <!-- Bottom Navigation for Mobile -->
     <AppBottomNav />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+
 import { useRoute, useRouter } from "vue-router";
 import AppSidebar from "~/components/layout/AppSidebar.vue";
 import AppHeader from "~/components/layout/AppHeader.vue";
@@ -33,18 +25,15 @@ import AppBottomNav from "~/components/layout/AppBottomNav.vue";
 import { useAuthStore } from "~/stores/auth";
 import { useGroupStore } from "~/stores/group";
 import { useNuxtApp } from "#app";
-import { onMounted, onUnmounted } from "vue";
 import { useToast } from "~/composables/useToast";
-import { useWalletStore } from "~/stores/wallet";
 
 const route = useRoute();
 const router = useRouter();
 
-// Simple title logic based on route name/path
 const pageTitle = computed(() => {
   if (route.path === "/") return "Dashboard";
   if (route.path.startsWith("/group")) return "Groups";
-  if (route.path.startsWith("/wallet")) return "Wallet";
+
   if (route.path.startsWith("/expenses")) return "Expenses";
   if (route.path.startsWith("/settlements")) return "Settlements";
   if (route.path.startsWith("/profile")) return "Profile";
@@ -53,7 +42,6 @@ const pageTitle = computed(() => {
 
 const authStore = useAuthStore();
 const groupStore = useGroupStore();
-const walletStore = useWalletStore();
 const { addToast } = useToast();
 const { $echo } = useNuxtApp();
 
@@ -109,15 +97,6 @@ onMounted(() => {
           addToast(`${event.userName} left the group`, "info");
         }
       })
-      .listen(".WalletDeposited", (event: any) => {
-        if (walletStore.walletDetails) {
-          walletStore.walletDetails.balance = event.walletBalance;
-        }
-        if (walletStore.transactions) {
-          walletStore.transactions.unshift(event.transaction);
-        }
-        addToast(`Successfully deposited ${event.transaction.amount} to wallet`, "success");
-      });
   }
 });
 

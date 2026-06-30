@@ -82,6 +82,5 @@ const authStore = useAuthStore();
 const navigation = [
   { name: "Dashboard", href: "/", icon: "pi-th-large" },
   { name: "Group", href: "/group", icon: "pi-users" },
-  { name: "Wallet", href: "/wallet", icon: "pi-wallet" },
 ];
 </script>

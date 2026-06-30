@@ -16,6 +16,7 @@ class DashboardController extends Controller
     // retrieve global dashboard stats for user
     public function index(Request $request): JsonResponse
     {
+        // return global balances by calculating from user id
         return response()->json([
             'success' => true,
             'data' => $this->balanceService->getUserGlobalBalances(

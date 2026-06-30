@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
 import { useApi } from "~/composables/useApi";
 import type { User } from "~/types/user";
 import type { ApiResponse } from "~/types/api";

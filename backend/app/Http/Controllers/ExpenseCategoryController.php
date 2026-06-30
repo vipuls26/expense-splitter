@@ -10,6 +10,7 @@ class ExpenseCategoryController extends Controller
 {
     public function index(): JsonResponse
     {
+        // retrieve all predefined categories
         return response()->json([
             'message' => 'Expense categories retrieved successfully',
             'data' => ExpenseCategoryResource::collection(ExpenseCategory::all()),

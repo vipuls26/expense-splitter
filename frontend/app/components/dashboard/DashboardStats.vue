@@ -14,9 +14,7 @@
       <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">
         Wallet Balance
       </p>
-      <p class="text-3xl font-bold text-slate-900 dark:text-slate-100">
-        ₹{{ walletStore.walletDetails?.balance || "0.00" }}
-      </p>
+      
     </div>
 
     <div
@@ -61,8 +59,7 @@
 
 <script setup lang="ts">
 import { useDashboardStore } from "~/stores/dashboard";
-import { useWalletStore } from "~/stores/wallet";
 
 const dashboardStore = useDashboardStore();
-const walletStore = useWalletStore();
+
 </script>

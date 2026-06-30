@@ -198,50 +198,67 @@ onMounted(async () => {
 });
 
 const getMonth = (dateStr: string) => {
+  // convert string to date object
   const date = new Date(dateStr);
+  // return short month name
   return date.toLocaleString("default", { month: "short" });
 };
 
 const getDay = (dateStr: string) => {
+  // convert string to date object
   const date = new Date(dateStr);
+  // return day of month
   return date.getDate();
 };
 
 const getMyShare = (expense: Expense) => {
+  // get current user id
   const myId = authStore.user?.id;
+  // check if user id and expense splits exist
   if (!myId || !expense.splits) return 0;
 
+  // find user split in expense splits
   const mySplit = expense.splits.find((split) => split.user.id === myId);
+  // return amount owed as number or 0
   return mySplit ? Number(mySplit.amount_owed) : 0;
 };
 
 const handleDelete = (expenseId: Id) => {
+  // set expense id to delete
   expenseToDelete.value = expenseId;
+  // open delete dialog
   isDeleteDialogOpen.value = true;
 };
 
 async function executeDelete() {
+  // return if no expense is selected
   if (expenseToDelete.value === null) {
     return;
   }
 
+  // set deleting state to true
   isDeleting.value = true;
 
   try {
+    // call deleteExpense method on store
     const response = await expenseStore.deleteExpense(expenseToDelete.value);
 
     if (response.success) {
+      // show success toast
       addToast("Expense deleted successfully", "success");
 
+      // close dialog and reset id
       isDeleteDialogOpen.value = false;
       expenseToDelete.value = null;
     }
   } catch (err: any) {
+    // show error toast if api fails
     addToast(
       err.response?.data?.message ?? "Failed to delete expense",
       "error",
     );
   } finally {
+    // reset deleting state
     isDeleting.value = false;
   }
 }

@@ -12,6 +12,7 @@ class GroupRepository implements GroupRepositoryInterface
     // get logging user's groups
     public function getUserGroups(int $userId): Collection
     {
+        // query groups where members relation contains user id, then load relation
         return Group::whereHas('members', function ($query) use ($userId) {
             $query->where('users.id', $userId);
         })
@@ -22,30 +23,37 @@ class GroupRepository implements GroupRepositoryInterface
     // find group by group_id
     public function findById(int $id): Group
     {
+        // find group or fail, eager load members
         return Group::with('members')->findOrFail($id);
     }
 
     // create group
     public function create(array $data): Group
     {
+        // create new group record
         return Group::create($data);
     }
 
     // update group
     public function update(int $id, array $data): Group
     {
+        // find group by id
         $group = $this->findById($id);
 
+        // update group with given data
         $group->update($data);
 
+        // return updated group
         return $group;
     }
 
     // delete group
     public function delete(int $id): bool
     {
+        // find group by id
         $group = $this->findById($id);
 
+        // delete group record
         return $group->delete();
     }
 
