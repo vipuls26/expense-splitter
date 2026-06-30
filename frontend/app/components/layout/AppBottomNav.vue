@@ -28,8 +28,4 @@ const navigation = [
 ];
 </script>
 
-<style scoped>
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-</style>
+

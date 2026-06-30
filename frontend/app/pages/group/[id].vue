@@ -94,6 +94,7 @@ import { useToast } from "~/composables/useToast";
 import { useNuxtApp } from "#app";
 import { onMounted, onUnmounted } from "vue";
 import BaseLink from "~/components/ui/BaseLink.vue";
+import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
 import ExpenseList from "~/components/expense/ExpenseList.vue";
 import BalancesList from "~/components/expense/BalancesList.vue";
 import GroupHeader from "~/components/group/GroupHeader.vue";

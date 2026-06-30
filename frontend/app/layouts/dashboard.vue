@@ -30,6 +30,8 @@ import { useToast } from "~/composables/useToast";
 const route = useRoute();
 const router = useRouter();
 
+const { register, unregister } = useGroupRealtime();
+
 const pageTitle = computed(() => {
   if (route.path === "/") return "Dashboard";
   if (route.path.startsWith("/group")) return "Groups";
@@ -45,64 +47,69 @@ const groupStore = useGroupStore();
 const { addToast } = useToast();
 const { $echo } = useNuxtApp();
 
-onMounted(() => {
-  if ($echo && authStore.user) {
-    $echo.private(`user.${authStore.user.id}`)
-      .listen(".GroupCreated", (event: any) => {
-        groupStore.groups.unshift(event.group);
-        addToast(`You were added to group: ${event.group.name}`, "success");
-      })
-      .listen(".GroupUpdated", (event: any) => {
-        if (groupStore.currentGroup && groupStore.currentGroup.id === event.groupId) {
-          Object.assign(groupStore.currentGroup, event.group);
-        }
-        const groupToUpdate = groupStore.groups.find(g => g.id === event.groupId);
-        if (groupToUpdate) {
-          Object.assign(groupToUpdate, event.group);
-        }
-        addToast("Group details were updated", "info");
-      })
-      .listen(".GroupDeleted", (event: any) => {
-        groupStore.groups = groupStore.groups.filter(g => g.id !== event.groupId);
-        if (route.path === `/group/${event.groupId}`) {
-          addToast("Group was deleted", "error");
-          router.push('/');
-        }
-      })
-      .listen(".MemberRemoved", (event: any) => {
-        if (groupStore.currentGroup && groupStore.currentGroup.id === event.groupId) {
-          groupStore.currentGroup.members = groupStore.currentGroup.members?.filter(
-            (m) => m.id !== event.userId
-          ) || [];
-        }
-        if (authStore.user?.id === event.userId) {
-          groupStore.groups = groupStore.groups.filter(g => g.id !== event.groupId);
-          if (route.path === `/group/${event.groupId}`) {
-            addToast(`You were removed from the group`, "warning");
-            router.push('/');
-          }
-        } else if (route.path === `/group/${event.groupId}`) {
-          addToast(`${event.userName} was removed`, "warning");
-        }
-      })
-      .listen(".MemberLeftGroup", (event: any) => {
-        if (groupStore.currentGroup && groupStore.currentGroup.id === event.groupId) {
-          groupStore.currentGroup.members = groupStore.currentGroup.members?.filter(
-            (m) => m.id !== event.userId
-          ) || [];
-        }
-        if (authStore.user?.id === event.userId) {
-          groupStore.groups = groupStore.groups.filter(g => g.id !== event.groupId);
-        } else if (route.path === `/group/${event.groupId}`) {
-          addToast(`${event.userName} left the group`, "info");
-        }
-      })
-  }
-});
+// onMounted(() => {
+//   if ($echo && authStore.user) {
+//     $echo.private(`user.${authStore.user.id}`)
+//       .listen(".GroupCreated", (event: any) => {
+//         groupStore.groups.unshift(event.group);
+//         addToast(`You were added to group: ${event.group.name}`, "success");
+//       })
+//       .listen(".GroupUpdated", (event: any) => {
+//         if (groupStore.currentGroup && groupStore.currentGroup.id === event.groupId) {
+//           Object.assign(groupStore.currentGroup, event.group);
+//         }
+//         const groupToUpdate = groupStore.groups.find(g => g.id === event.groupId);
+//         if (groupToUpdate) {
+//           Object.assign(groupToUpdate, event.group);
+//         }
+//         addToast("Group details were updated", "info");
+//       })
+//       .listen(".GroupDeleted", (event: any) => {
+//         groupStore.groups = groupStore.groups.filter(g => g.id !== event.groupId);
+//         if (route.path === `/group/${event.groupId}`) {
+//           addToast("Group was deleted", "error");
+//           router.push('/');
+//         }
+//       })
+//       .listen(".MemberRemoved", (event: any) => {
+//         if (groupStore.currentGroup && groupStore.currentGroup.id === event.groupId) {
+//           groupStore.currentGroup.members = groupStore.currentGroup.members?.filter(
+//             (m) => m.id !== event.userId
+//           ) || [];
+//         }
+//         if (authStore.user?.id === event.userId) {
+//           groupStore.groups = groupStore.groups.filter(g => g.id !== event.groupId);
+//           if (route.path === `/group/${event.groupId}`) {
+//             addToast(`You were removed from the group`, "warning");
+//             router.push('/');
+//           }
+//         } else if (route.path === `/group/${event.groupId}`) {
+//           addToast(`${event.userName} was removed`, "warning");
+//         }
+//       })
+//       .listen(".MemberLeftGroup", (event: any) => {
+//         if (groupStore.currentGroup && groupStore.currentGroup.id === event.groupId) {
+//           groupStore.currentGroup.members = groupStore.currentGroup.members?.filter(
+//             (m) => m.id !== event.userId
+//           ) || [];
+//         }
+//         if (authStore.user?.id === event.userId) {
+//           groupStore.groups = groupStore.groups.filter(g => g.id !== event.groupId);
+//         } else if (route.path === `/group/${event.groupId}`) {
+//           addToast(`${event.userName} left the group`, "info");
+//         }
+//       })
+//   }
+// });
 
-onUnmounted(() => {
-  if ($echo && authStore.user) {
-    $echo.leave(`user.${authStore.user.id}`);
-  }
-});
+// onUnmounted(() => {
+//   if ($echo && authStore.user) {
+//     $echo.leave(`user.${authStore.user.id}`);
+//   }
+// });
+
+onMounted(register);
+
+onUnmounted(unregister);
+
 </script>
