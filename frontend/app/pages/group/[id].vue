@@ -1,7 +1,8 @@
 <template>
   <div class="py-6 phone-lg:py-8 px-4 phone-lg:px-6 tablet:px-8 laptop:px-10 max-w-7xl mx-auto">
+    
     <div v-if="groupStore.isLoading && !groupStore.currentGroup" class="space-y-6">
-      <!-- Header Skeleton -->
+      
       <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
         <div class="flex flex-col tablet:flex-row gap-6">
           <BaseSkeleton class="h-20 w-20 rounded-2xl shrink-0" />
@@ -12,7 +13,6 @@
         </div>
       </div>
 
-      <!-- Tabs Skeleton -->
       <BaseSkeleton class="h-14 w-full rounded-xl" />
 
       <!-- Content Skeleton -->
@@ -24,9 +24,8 @@
     <div v-else-if="groupStore.currentGroup" class="space-y-6">
       <GroupHeader :is-owner="isOwner" :group="groupStore.currentGroup" />
 
-      <!-- Tabs Navigation -->
-      <div
-        class="flex overflow-x-auto hide-scrollbar border-b border-slate-200 dark:border-slate-700">
+
+      <div class="flex overflow-x-auto hide-scrollbar border-b border-slate-200 dark:border-slate-700">
         <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
           'flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold transition-colors whitespace-nowrap border-b-2',
           activeTab === tab.id
@@ -38,25 +37,23 @@
         </button>
       </div>
 
-      <!-- Tab Contents -->
       <div class="mt-6 min-h-100">
-        <!-- Expenses Tab -->
+        <!-- expenses tab -->
         <div v-if="activeTab === 'expenses'" class="fade-in">
           <ExpenseList v-if="groupStore.currentGroup" :group-id="groupStore.currentGroup.id" :is-owner="authStore.user?.id == groupStore.currentGroup?.created_by
             " @add-expense="isExpenseModalOpen = true" />
         </div>
 
-        <!-- Balances Tab -->
+        <!-- balance tab -->
         <div v-if="activeTab === 'balances'" class="fade-in">
           <BalancesList v-if="groupStore.currentGroup" :group-id="groupStore.currentGroup.id" />
         </div>
 
-
-
-        <!-- Members Tab -->
+        <!-- member tab -->
         <div v-if="activeTab === 'members'" class="fade-in">
           <GroupMembers :is-owner="isOwner" :group="groupStore.currentGroup" />
         </div>
+
       </div>
     </div>
 
@@ -70,28 +67,22 @@
           Go to Dashboard
         </BaseLink>
 
-
       </div>
-
     </div>
 
-    <!-- Add Expense Modal (Lazy Loaded) -->
+    <!-- add expense model  -->
     <AddExpenseModal v-if="isExpenseModalOpen && groupStore.currentGroup" :is-open="isExpenseModalOpen"
       :group-id="groupStore.currentGroup.id" :members="groupStore.currentGroup.members || []"
       @close="isExpenseModalOpen = false" />
-
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useGroupStore } from "~/stores/group";
 import { useAuthStore } from "~/stores/auth";
-import { useExpenseStore } from "~/stores/expense";
-import { useSettlementStore } from "~/stores/settlement";
-import { useToast } from "~/composables/useToast";
-import { useNuxtApp } from "#app";
+import { useGroupRealtime } from "~/composables/useGroupRealtime";
 import { onMounted, onUnmounted } from "vue";
 import BaseLink from "~/components/ui/BaseLink.vue";
 import BaseSkeleton from "~/components/ui/BaseSkeleton.vue";
@@ -108,11 +99,8 @@ definePageMeta({
 
 const route = useRoute();
 const groupStore = useGroupStore();
-const expenseStore = useExpenseStore();
-const settlementStore = useSettlementStore();
 const authStore = useAuthStore();
-const { addToast } = useToast();
-const { $echo } = useNuxtApp();
+const { registerGroup, unregisterGroup } = useGroupRealtime();
 
 const isOwner = computed(
   () => authStore.user?.id == groupStore.currentGroup?.created_by,
@@ -136,51 +124,13 @@ onMounted(() => {
   if (groupId) {
     groupStore.fetchGroup(groupId);
     subscribedGroupId = groupId;
-
-    // Listen for real-time Reverb notifications
-    if ($echo) {
-      $echo.leave(`group.${groupId}`);
-
-      $echo.private(`group.${groupId}`)
-        .listen(".ExpenseCreated", (event: any) => {
-          expenseStore.expenses.unshift(event.expense);
-          settlementStore.recalculateBalances();
-          addToast(`New expense added`, "success");
-        })
-        .listen(".ExpenseUpdated", (event: any) => {
-          const index = expenseStore.expenses.findIndex(e => e.id === event.expense.id);
-          if (index !== -1) {
-            expenseStore.expenses[index] = event.expense;
-            settlementStore.recalculateBalances();
-          }
-          addToast(`Expense updated`, "info");
-        })
-        .listen(".ExpenseDeleted", (event: any) => {
-          expenseStore.expenses = expenseStore.expenses.filter(e => e.id !== event.expenseId);
-          settlementStore.recalculateBalances();
-          addToast("Expense deleted", "error");
-        })
-        .listen(".MemberAdded", (event: any) => {
-          if (groupStore.currentGroup) {
-            groupStore.currentGroup.members = groupStore.currentGroup.members || [];
-            if (!groupStore.currentGroup.members.some(m => m.id === event.member.id)) {
-              groupStore.currentGroup.members.push(event.member);
-            }
-          }
-          addToast(`${event.member.name} joined the group`, "success");
-        })
-        .listen(".SettlementCompleted", (event: any) => {
-          addToast(`Settlement completed`, "success");
-          expenseStore.expenses.unshift(event.settlement); // assuming settlement is added to expenses feed
-          settlementStore.recalculateBalances();
-        });
-    }
+    registerGroup(groupId);
   }
 });
 
 onUnmounted(() => {
-  if ($echo && subscribedGroupId) {
-    $echo.leave(`group.${subscribedGroupId}`);
+  if (subscribedGroupId) {
+    unregisterGroup(subscribedGroupId);
     subscribedGroupId = null;
   }
 });

@@ -4,8 +4,8 @@ import { useAuthStore } from "~/stores/auth";
 
 declare global {
   interface Window {
-    Pusher: any;
-    Echo: any;
+    Pusher: typeof Pusher;
+    Echo: Echo<"reverb">;
   }
 }
 

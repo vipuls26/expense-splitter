@@ -108,7 +108,7 @@
     <BaseDialog :is-open="isSettleModalOpen" title="Settle Up"
       :message="`Record a cash or external payment of ₹${selectedDebt?.amount.toFixed(2)} to ${selectedDebt?.to.name}?`"
       confirm-text="Record Payment" cancel-text="Cancel" confirm-variant="solid" icon="pi-money-bill"
-      :is-loading="isSettling" @close="isSettleModalOpen = false" @confirm="executeSettle" />
+      :is-loading="isSettling" @close="isSettleModalOpen = false" @confirm="confirmSettle" />
   </div>
 </template>
 
@@ -163,7 +163,7 @@ function openSettleModal(debt: Settlement) {
   isSettleModalOpen.value = true;
 }
 
-async function executeSettle() {
+async function confirmSettle() {
   if (!selectedDebt.value) return;
   isSettling.value = true;
   try {
@@ -186,7 +186,8 @@ async function executeSettle() {
     } else {
       addToast(response.message || "Failed to settle up", "error");
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { _data?: { message?: string } } };
     addToast(err.response?._data?.message || "Failed to settle up", "error");
   } finally {
     isSettling.value = false;

@@ -43,7 +43,7 @@ defineOptions({
 
 const props = defineProps<{
   id: string;
-  modelValue: any;
+  modelValue: string | number | Record<string, unknown> | null | undefined;
   label?: string;
   error?: string;
   icon?: string;
@@ -52,7 +52,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: any): void;
+  (e: 'update:modelValue', value: string | number | Record<string, unknown> | null | undefined): void;
 }>();
 
 const model = computed({

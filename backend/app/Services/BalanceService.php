@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Expense;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
+use Illuminate\Support\Facades\Log;
 
 class BalanceService
 {
@@ -13,76 +14,76 @@ class BalanceService
         private GroupRepositoryInterface $groupRepository
     ) {}
 
+
+    // Calculate each member's balance in a group
     public function calculateBalances(int $groupId): array
     {
-        // retrieve all expenses for the group
         $expenses = $this->expenseRepository->getExpensesForGroup($groupId);
-        // initialize balances with zero for all group members
+
         $balances = $this->initializeBalances($groupId);
 
-        // iterate through expenses to calculate net balances
         foreach ($expenses as $expense) {
-            // apply expense amount and splits to member balances
-            $this->applyExpenseToBalances(
-                $balances,
-                $expense
-            );
+
+            Log::info("Processing expense - ID: {$expense->id}, Paid By: {$expense->payer->name}, Amount: {$expense->amount}");
+
+            $this->applyExpenseToBalances($balances, $expense);
         }
 
-        // round all calculated balances to 2 decimal places
         $this->roundBalances($balances);
 
-        // return calculated balances
+        Log::info('Final balances: ' . json_encode(collect($balances)->map(fn($item) => ['user' => $item['user']->name, 'balance' => $item['balance']])->values()->toArray()));
+
         return $balances;
     }
 
+
+    // Calculate settlement transactions
     public function calculateSettlements(int $groupId): array
     {
-        // calculate all members balances
+        Log::info("Settlement calculation started - Group ID: {$groupId}");
+
         $balances = $this->calculateBalances($groupId);
 
-        // prepare settlement data into debtors and creditors
-        $data = $this->prepareSettlementData($balances);
+        Log::info('Calculated balances: ' . json_encode(collect($balances)->map(fn($item) => ['user' => $item['user']->name, 'balance' => $item['balance']])->values()->toArray()));
 
-        // generate required settlement transactions
+        $settlementData = $this->prepareSettlementData($balances);
+
+        Log::info('Prepared settlement data - Debtors: ' . json_encode(collect($settlementData['debtors'])->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()) . ', Creditors: ' . json_encode(collect($settlementData['creditors'])->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()));
+
+
         return $this->generateSettlements(
-            $data['debtors'],
-            $data['creditors']
+            $settlementData['debtors'],
+            $settlementData['creditors']
         );
     }
 
+    // Calculate user's overall balances across all groups
     public function getUserGlobalBalances(int $userId): array
     {
-        // fetch all groups user belongs to
         $groups = $this->groupRepository->getUserGroups($userId);
 
-        // initialize global tracking metrics
         $totalBalance = 0.0;
         $youOwe = 0.0;
         $youAreOwed = 0.0;
 
-        // iterate over each group to aggregate balances
         foreach ($groups as $group) {
-            // calculate group level balances
-            $groupBalances = $this->calculateBalances($group->id);
+            $balances = $this->calculateBalances($group->id);
 
-            // if user has a balance in the group, aggregate it
-            if (isset($groupBalances[$userId])) {
-                $myBalance = $groupBalances[$userId]['balance'];
+            if (! isset($balances[$userId])) {
+                continue;
+            }
 
-                // add to net total balance
-                $totalBalance += $myBalance;
+            $balance = $balances[$userId]['balance'];
 
-                // increment owing or owed totals
-                if ($myBalance < 0) {
-                    $youOwe += abs($myBalance);
-                } elseif ($myBalance > 0) {
-                    $youAreOwed += $myBalance;
-                }
+            $totalBalance += $balance;
+
+            if ($balance < 0) {
+                $youOwe += abs($balance);
+            } elseif ($balance > 0) {
+                $youAreOwed += $balance;
             }
         }
 
-        // return aggregated balances rounded to 2 decimal places
         return [
             'total_balance' => round($totalBalance, 2),
             'you_owe' => round($youOwe, 2),
@@ -90,121 +91,146 @@ class BalanceService
         ];
     }
 
+
+    // Initialize every group member with zero balance.
     private function initializeBalances(int $groupId): array
     {
-        // define empty balances array
+
+
         $balances = [];
 
-        // find group by id
         $group = $this->groupRepository->findById($groupId);
 
-        // check if group exists
         if (! $group) {
+
+            Log::warning("Group not found - Group ID: {$groupId}");
+
             return $balances;
         }
 
-        // iterate members and default their balance to zero
         foreach ($group->members as $member) {
+
             $balances[$member->id] = [
                 'user' => $member,
                 'balance' => 0.0,
             ];
         }
 
-        // return initialized balances
         return $balances;
     }
 
-    private function applyExpenseToBalances(
-        array &$balances,
-        Expense $expense
-    ): void {
-        // extract payer id
+
+    // Apply one expense to balances.
+    private function applyExpenseToBalances(array &$balances, Expense $expense): void
+    {
+
+
         $payerId = $expense->paid_by;
 
-        // add expense amount to payer's credit balance
-        if (isset($balances[$payerId])) {
-            $balances[$payerId]['balance'] += (float) $expense->amount;
-        } else {
+        if (! isset($balances[$payerId])) {
             $balances[$payerId] = [
                 'user' => $expense->payer,
-                'balance' => (float) $expense->amount,
+                'balance' => 0.0,
             ];
         }
 
-        // deduct each user's split from their balance
-        foreach ($expense->splits as $split) {
-            $userId = $split->user_id;
+        // Payer should receive the full expense amount.
+        $balances[$payerId]['balance'] += (float) $expense->amount;
 
-            if (isset($balances[$userId])) {
-                $balances[$userId]['balance'] -= (float) $split->amount_owed;
+        // Each participant owes their split.
+        foreach ($expense->splits as $split) {
+
+            Log::info("Split - User: {$split->user->name}, Amount Owed: {$split->amount_owed}");
+
+            if (! isset($balances[$split->user_id])) {
+                continue;
             }
+
+            $balances[$split->user_id]['balance'] -= (float) $split->amount_owed;
         }
     }
 
+    // Round balances.
     private function roundBalances(array &$balances): void
     {
-        // run loop and apply rounding to all float balances
-        foreach ($balances as &$data) {
-            $data['balance'] = round($data['balance'], 2);
+        foreach ($balances as &$balance) {
+            $balance['balance'] = round($balance['balance'], 2);
         }
     }
 
+
+    // Separate members into debtors and creditors.
     private function prepareSettlementData(array $balances): array
     {
-        // initialize arrays for tracking who owes money and who is owed
+        Log::info('Preparing settlement data.');
+
         $debtors = [];
         $creditors = [];
 
-        // filter members into debtors (negative balance) and creditors (positive balance)
-        foreach ($balances as $userId => $data) {
-            if ($data['balance'] < -0.01) {
+        foreach ($balances as $userId => $balance) {
+
+            if ($balance['balance'] < -0.01) {
+
                 $debtors[] = [
                     'user_id' => $userId,
-                    'user' => $data['user'],
-                    'amount' => abs($data['balance']),
+                    'user' => $balance['user'],
+                    'amount' => abs($balance['balance']),
                 ];
-            } elseif ($data['balance'] > 0.01) {
+            } elseif ($balance['balance'] > 0.01) {
+
                 $creditors[] = [
                     'user_id' => $userId,
-                    'user' => $data['user'],
-                    'amount' => $data['balance'],
+                    'user' => $balance['user'],
+                    'amount' => $balance['balance'],
                 ];
             }
         }
 
-        // sort both arrays descending by amount to simplify large debts first
-        usort($debtors, fn($a, $b) => $b['amount'] <=> $a['amount']);
-        usort($creditors, fn($a, $b) => $b['amount'] <=> $a['amount']);
+        usort(
+            $debtors,
+            fn($a, $b) => $b['amount'] <=> $a['amount']
+        );
 
-        // return separated debtor and creditor arrays
+        usort(
+            $creditors,
+            fn($a, $b) => $b['amount'] <=> $a['amount']
+        );
+
+        Log::info('Debtors: ' . json_encode(collect($debtors)->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()));
+
+        Log::info('Creditors: ' . json_encode(collect($creditors)->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()));
+
         return [
             'debtors' => $debtors,
             'creditors' => $creditors,
         ];
     }
 
+
+    // Greedy settlement algorithm
     private function generateSettlements(array $debtors, array $creditors): array
     {
-        // initialize settlements tracking array
+        Log::info('Generating settlements.');
+
         $settlements = [];
 
-        // initialize pointers for iterating debtors and creditors
-        $i = 0;
-        $j = 0;
+        $debtorIndex = 0;
+        $creditorIndex = 0;
 
-        // resolve debts continuously until either all debtors or creditors are handled
-        while ($i < count($debtors) && $j < count($creditors)) {
-            $debtor = &$debtors[$i];
-            $creditor = &$creditors[$j];
+        while ($debtorIndex < count($debtors) && $creditorIndex < count($creditors)) {
 
-            // determine maximum transferable amount between the two users
+            $debtor = &$debtors[$debtorIndex];
+            $creditor = &$creditors[$creditorIndex];
+
+            Log::info("Current pair - Debtor: {$debtor['user']->name} ({$debtor['amount']}), Creditor: {$creditor['user']->name} ({$creditor['amount']})");
+
             $settleAmount = round(
                 min($debtor['amount'], $creditor['amount']),
                 2
             );
 
-            // if amount exists, record the settlement payment
+            Log::info("Settlement amount: {$settleAmount}");
+
             if ($settleAmount > 0) {
                 $settlements[] = [
                     'from' => $debtor['user'],
@@ -213,21 +239,27 @@ class BalanceService
                 ];
             }
 
-            // deduct settled amount from their remaining balance
             $debtor['amount'] -= $settleAmount;
             $creditor['amount'] -= $settleAmount;
 
-            // increment pointers if user's debts/credits are fully resolved
-            if ($debtor['amount'] < 0.01) {
-                $i++;
+            Log::info("Updated balances - Debtor Remaining: {$debtor['amount']}, Creditor Remaining: {$creditor['amount']}");
+
+            if ($debtor['amount'] <= 0.01) {
+
+                Log::info("Debtor settled - User: {$debtor['user']->name}");
+                $debtorIndex++;
             }
 
-            if ($creditor['amount'] < 0.01) {
-                $j++;
+            if ($creditor['amount'] <= 0.01) {
+
+                Log::info("Creditor settled - User: {$creditor['user']->name}");
+
+                $creditorIndex++;
             }
         }
 
-        // return the final minimum list of settlement transactions
+        Log::info('Generated settlements: ' . json_encode(collect($settlements)->map(fn($item) => ['from' => $item['from']->name, 'to' => $item['to']->name, 'amount' => $item['amount']])->values()->toArray()));
+
         return $settlements;
     }
 }

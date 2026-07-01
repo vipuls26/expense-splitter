@@ -163,7 +163,8 @@ const handleUpdateGroup = async () => {
       addToast("Group updated successfully", "success");
       isEditing.value = false;
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { _data?: { message?: string } } };
     addToast(getErrorMessage(err), "error");
   } finally {
     isUpdating.value = false;
@@ -186,7 +187,8 @@ async function executeDeleteGroup() {
     } else {
       addToast(response.message || "Failed to delete group", "error");
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { _data?: { message?: string } } };
     addToast(getErrorMessage(err), "error");
   } finally {
     isDeleting.value = false;
@@ -203,7 +205,8 @@ const executeLeaveGroup = async () => {
       addToast("You have left the group", "success");
       router.push("/");
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { _data?: { message?: string } } };
     addToast(getErrorMessage(err), "error");
   } finally {
     isLeaving.value = false;
@@ -212,7 +215,8 @@ const executeLeaveGroup = async () => {
 };
 
 // Helper function for api errors
-function getErrorMessage(error: any): string {
-  return error?.response?._data?.message ?? "Something went wrong";
+function getErrorMessage(error: unknown): string {
+  const err = error as { response?: { _data?: { message?: string } } };
+  return err?.response?._data?.message ?? "Something went wrong";
 }
 </script>

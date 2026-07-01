@@ -1,8 +1,9 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
+  <div v-if="isOpen"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
     <div
       class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in-up transition-colors">
-      <!-- Header -->
+
       <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
         <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
           Add an Expense
@@ -13,35 +14,25 @@
         </button>
       </div>
 
-      <!-- Scrollable Form Body -->
+
       <div class="p-6 overflow-y-auto flex-1 space-y-5">
-        <!-- Category Dropdown -->
-        <BaseSelect
-          id="expense_category_id"
-          label="Expense Category"
-          v-model="expense_category_id"
-          icon="pi-tags"
-          placeholder="Select a category"
-          :error="errors.expense_category_id"
-          required
-        >
+        <!-- category dropdown -->
+        <BaseSelect id="expense_category_id" label="Expense Category" v-model="expense_category_id" icon="pi-tags"
+          placeholder="Select a category" :error="errors.expense_category_id" required>
           <option v-for="category in categoryStore.categories" :key="category.id" :value="category.id"
             class="dark:bg-slate-800 text-slate-900 dark:text-slate-100">
             {{ category.name }}
           </option>
         </BaseSelect>
 
-        <!-- Description -->
+        <!-- description -->
         <BaseInput id="description" label="What was this for?" v-model="description"
           placeholder="e.g. Airport taxi, Dinner, etc" icon="pi-comment" :error="errors.description" required />
 
-        <!-- Amount -->
+        <!-- amount -->
         <BaseInput id="amount" type="number" label="Total Amount (₹)" v-model="amount" placeholder="0.00"
           icon="pi-indian-rupee" :error="errors.amount" required min="0.01" step="0.01" class="text-xl font-bold" />
 
-
-
-        <!-- Split Options -->
         <div class="border-t border-slate-200 dark:border-slate-700 pt-5">
           <div class="flex justify-between items-center mb-3">
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">Split Equally Between<span
@@ -65,7 +56,7 @@
                   {{ member.id === authStore.user?.id ? "You" : member.name }}
                 </span>
               </div>
-              <span v-if="selectedMembers?.includes(member.id)" class="text-sm text-slate-500 dark:text-slate-400">
+              <span v-if="selectedMembers?.includes(member.id) || selectedMembers?.includes(member.id.toString())" class="text-sm text-slate-500 dark:text-slate-400">
                 ₹{{ splitAmountPerPerson.toFixed(2) }}
               </span>
             </label>
@@ -73,7 +64,7 @@
         </div>
       </div>
 
-      <!-- Footer Actions -->
+
       <div
         class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
         <BaseButton @click="$emit('close')" variant="outline">
@@ -88,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from "vue";
+
 import BaseInput from "~/components/ui/BaseInput.vue";
 import BaseButton from "~/components/ui/BaseButton.vue";
 import BaseSelect from "~/components/ui/BaseSelect.vue";
@@ -96,13 +87,15 @@ import { useAuthStore } from "~/stores/auth";
 import { useExpenseStore } from "~/stores/expense";
 import { useCategoryStore } from "~/stores/category";
 import { useToast } from "~/composables/useToast";
-import { onMounted } from "vue";
+import { onMounted, watch } from "vue";
+import type { Ref } from "vue";
 import type { GroupMember } from "~/types/group";
-import type { CreateExpensePayload } from "~/types/expense";
 import type { Id } from "~/types/common";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";
+import buildEqualSplits from "~/utils/split";
+
 
 const props = defineProps<{
   isOpen: boolean;
@@ -126,6 +119,7 @@ onMounted(() => {
   }
 });
 
+// validation
 const expenseSchema = toTypedSchema(
   z.object({
     expense_category_id: z.coerce.string().min(1, "Please select a category."),
@@ -155,18 +149,18 @@ const {
   initialValues: {
     expense_category_id: "",
     description: "",
-    amount: undefined as any,
-    paid_by: undefined as any,
-    selectedMembers: [],
+    amount: undefined as number | undefined,
+    paid_by: "",
+    selectedMembers: [] as string[],
   },
 });
 
-// define fields with any to prevent vue strict template errors
-const [expense_category_id] = defineField("expense_category_id") as any;
-const [description] = defineField("description") as any;
-const [amount] = defineField("amount") as any;
-const [paid_by] = defineField("paid_by") as any;
-const [selectedMembers] = defineField("selectedMembers") as any;
+// define fields without any
+const [expense_category_id] = defineField("expense_category_id") as unknown as [Ref<string>];
+const [description] = defineField("description") as unknown as [Ref<string>];
+const [amount] = defineField("amount") as unknown as [Ref<number | undefined>];
+const [paid_by] = defineField("paid_by") as unknown as [Ref<string | number>];
+const [selectedMembers] = defineField("selectedMembers") as unknown as [Ref<Array<string | number>>];
 
 // set default values when the modal opens
 watch(
@@ -177,9 +171,9 @@ watch(
         values: {
           expense_category_id: "",
           description: "",
-          amount: undefined as any,
+          amount: undefined as unknown as number,
           paid_by: authStore.user?.id ?? props.members[0]?.id,
-          selectedMembers: props.members.map((member) => member.id),
+          selectedMembers: props.members.map((member) => member.id.toString()),
         },
       });
     }
@@ -208,7 +202,7 @@ const onSubmit = handleSubmit(async (values) => {
       description: values.description,
       amount: values.amount,
       paid_by: values.paid_by,
-      splits: buildSplits(values.amount, values.selectedMembers),
+      splits: buildEqualSplits(values.amount, values.selectedMembers),
     });
 
     if (response.success) {
@@ -216,12 +210,14 @@ const onSubmit = handleSubmit(async (values) => {
       emit("expense-added");
       emit("close");
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { status?: number; _data?: { errors?: Record<string, string[]>; message?: string } } };
     if (err.response?.status === 422 && err.response?._data?.errors) {
       const apiErrors = err.response._data.errors;
       const formErrors: Record<string, string> = {};
       for (const key in apiErrors) {
-        formErrors[key] = apiErrors[key][0];
+        const firstError = apiErrors[key]?.[0];
+        if (firstError) formErrors[key] = firstError;
       }
 
       if (
@@ -238,22 +234,4 @@ const onSubmit = handleSubmit(async (values) => {
   }
 });
 
-// calculate the exact splits, giving the remainder to the first member
-function buildSplits(
-  totalAmount: number,
-  membersToSplit: Id[],
-): CreateExpensePayload["splits"] {
-  const baseAmount =
-    Math.floor((totalAmount / membersToSplit.length) * 100) / 100;
-
-  const remainder =
-    Math.round((totalAmount - baseAmount * membersToSplit.length) * 100) / 100;
-
-  return membersToSplit.map((userId, index) => ({
-    user_id: userId,
-    amount_owed: Number(
-      (baseAmount + (index === 0 ? remainder : 0)).toFixed(2),
-    ),
-  }));
-}
 </script>
