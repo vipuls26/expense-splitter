@@ -36,7 +36,6 @@ class AppServiceProvider extends ServiceProvider
             GroupRepository::class
         );
 
-        // Removed GroupServiceInterface binding as it does not exist
 
         $this->app->bind(
             ExpenseRepositoryInterface::class,
@@ -49,11 +48,13 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
+
+
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
-        User::observe(UserObserver::class);
+        // User::observe(UserObserver::class);
     }
 }

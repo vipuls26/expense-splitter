@@ -11,23 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('budgets', function (Blueprint $table) {
+        Schema::create('wallets', function (Blueprint $table) {
             $table->id();
 
-
-            $table->foreignId('group_id')
-                ->constrained()
+            // delete wallet automatically when user is deleted
+            $table->foreignId('user_id')
+                ->unique()
+                ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->foreignId('expense_category_id')
-                ->constrained()
-                ->cascadeOnDelete();
-
-            $table->decimal('amount', 12, 2);
+            $table->decimal('balance', 10, 2)
+                ->default(0);
 
             $table->timestamps();
 
-            $table->unique(['group_id','expense_category_id']);
         });
     }
 
@@ -36,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('budgets');
+        Schema::dropIfExists('wallets');
     }
 };

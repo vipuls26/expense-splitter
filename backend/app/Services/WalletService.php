@@ -3,185 +3,83 @@
 namespace App\Services;
 
 use App\Enum\WalletTransactionType;
-use App\Events\wallet\WalletDeposited;
 use App\Models\User;
 use App\Models\Wallet;
-use App\Repositories\WalletRepository;
+use App\Repositories\Interfaces\WalletRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
-use RuntimeException;
 
 class WalletService
 {
-    public function __construct(private WalletRepository $walletRepository)
-    {
-    }
+    // inject group and user repositories for database operations
+    public function __construct(
+        private WalletRepositoryInterface $walletRepository
+    ) {}
 
-    // get wallet
+    // get user wallet
     public function getWallet(User $user): Wallet
     {
-        $wallet = $this->walletRepository->findByUserId($user->id);
-
-        if (!$wallet) {
-            throw new RuntimeException('wallet not found');
-        }
-
-        return $wallet;
+        return $this->getUserWallet($user);
     }
 
     // deposit money into wallet
     public function deposit(User $user, float $amount): Wallet
     {
-        if ($amount <= 0) {
-            throw new InvalidArgumentException('Deposit amount must be greater than zero.');
-        }
+        // check if wallet exist
+        $wallet = $this->getUserWallet($user);
 
-        $wallet = DB::transaction(function () use ($user, $amount) {
-            $wallet = Wallet::where('user_id', $user->id)
-                ->lockForUpdate()
-                ->firstOrFail();
+        // save before balance
+        $balanceBefore = $wallet->balance;
 
-            $before = $wallet->balance;
-            $after = $before + $amount;
+        // db transaction if any query for rollback to maintain database consistency
+        DB::transaction(function () use ($wallet, $amount, $balanceBefore) {
 
-            $this->walletRepository->updateBalance($wallet, $after);
+            // update balance
+            $wallet->balance = $wallet->balance + $amount;
 
-            $transactionData = [
-                'wallet_id' => $wallet->id,
-                'type' => WalletTransactionType::Deposit,
+            // store balanace in varibale
+            $balanceAfter = $wallet->balance;
+
+            // save in database
+            $this->walletRepository->save($wallet);
+
+            // create wallet transaction
+            $this->walletRepository->createTransaction($wallet, [
+                'wallet_id'      => $wallet->id,
                 'amount' => $amount,
-                'balance_before' => $before,
-                'balance_after' => $after,
-                'description' => 'Wallet top-up',
-            ];
-
-            $transactionModel = $this->walletRepository->createTransaction($transactionData);
-
-            broadcast(new WalletDeposited($user->id, $after, $transactionModel->toArray()))->toOthers();
-
-            return $wallet->refresh();
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
+                'type' => WalletTransactionType::Deposit->value,
+                'description' => WalletTransactionType::Deposit->description(),
+            ]);
         });
 
+        // return wallet
         return $wallet;
     }
 
-    public function payExpense(User $user, float $amount, string $description = 'Expense payment'): Wallet
+    // get transaction hisotry for user
+    public function getTransactions(User $user): Collection
     {
-        if ($amount <= 0) {
-            throw new InvalidArgumentException('Amount must be greater than zero.');
-        }
-
-        return DB::transaction(function () use ($user, $amount, $description) {
-            $wallet = Wallet::where('user_id', $user->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($wallet->balance < $amount) {
-                throw new InvalidArgumentException('Insufficient wallet balance to pay for this expense.');
-            }
-
-            $before = $wallet->balance;
-            $after = $before - $amount;
-
-            $this->walletRepository->updateBalance($wallet, $after);
-
-            $this->walletRepository->createTransaction([
-                'wallet_id' => $wallet->id,
-                'type' => WalletTransactionType::ExpensePayment,
-                'amount' => $amount,
-                'balance_before' => $before,
-                'balance_after' => $after,
-                'description' => $description,
-            ]);
-
-            return $wallet->refresh();
-        });
+        // check if wallet exist
+        $wallet = $this->getUserWallet($user);
+        // fetch wallet transaction for logging user
+        return $this->walletRepository->getTransactions($wallet);
     }
 
-    public function processSettlement(User $payer, User $payee, float $amount, string $description = 'Settlement'): void
+
+    // helper method for checking  user wallet exist
+    private function getUserWallet(User $user): Wallet
     {
-        if ($amount <= 0) {
-            throw new InvalidArgumentException('Amount must be greater than zero.');
+        // check if wallet exist for loggin user
+        $wallet = $this->walletRepository->findWalletByUserId($user->id);
+
+        // throw error
+        if (! $wallet) {
+            throw new ModelNotFoundException('Wallet not found');
         }
 
-        DB::transaction(function () use ($payer, $payee, $amount, $description) {
-            $payerWallet = Wallet::where('user_id', $payer->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($payerWallet->balance < $amount) {
-                throw new InvalidArgumentException('Insufficient wallet balance for settlement.');
-            }
-
-            $payeeWallet = Wallet::where('user_id', $payee->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            // Deduct from payer
-            $payerBefore = $payerWallet->balance;
-            $payerAfter = $payerBefore - $amount;
-            $this->walletRepository->updateBalance($payerWallet, $payerAfter);
-            $this->walletRepository->createTransaction([
-                'wallet_id' => $payerWallet->id,
-                'type' => WalletTransactionType::SettlementPayment,
-                'amount' => $amount,
-                'balance_before' => $payerBefore,
-                'balance_after' => $payerAfter,
-                'description' => $description . ' to ' . $payee->name,
-            ]);
-
-            // Credit to payee
-            $payeeBefore = $payeeWallet->balance;
-            $payeeAfter = $payeeBefore + $amount;
-            $this->walletRepository->updateBalance($payeeWallet, $payeeAfter);
-            $this->walletRepository->createTransaction([
-                'wallet_id' => $payeeWallet->id,
-                'type' => WalletTransactionType::SettlementReceived,
-                'amount' => $amount,
-                'balance_before' => $payeeBefore,
-                'balance_after' => $payeeAfter,
-                'description' => $description . ' from ' . $payer->name,
-            ]);
-        });
-    }
-
-    public function refund(User $user, float $amount, string $description = 'Refund'): Wallet
-    {
-        if ($amount <= 0) {
-            throw new InvalidArgumentException('Amount must be greater than zero.');
-        }
-
-        return DB::transaction(function () use ($user, $amount, $description) {
-            $wallet = Wallet::where('user_id', $user->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            $before = $wallet->balance;
-            $after = $before + $amount;
-
-            $this->walletRepository->updateBalance($wallet, $after);
-
-            $this->walletRepository->createTransaction([
-                'wallet_id' => $wallet->id,
-                'type' => WalletTransactionType::Refund,
-                'amount' => $amount,
-                'balance_before' => $before,
-                'balance_after' => $after,
-                'description' => $description,
-            ]);
-
-            return $wallet->refresh();
-        });
-    }
-
-    public function getTransactions(User $user, int $perPage = 10)
-    {
-        $wallet = $this->walletRepository->findByUserId($user->id);
-
-        if (!$wallet) {
-            throw new RuntimeException('wallet not found');
-        }
-
-        return $this->walletRepository->getTransactions($wallet)->paginate($perPage);
+        return $wallet;
     }
 }

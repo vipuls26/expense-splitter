@@ -15,29 +15,29 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('wallet_id')
-                ->constrained()
+                ->constrained('wallets')
                 ->cascadeOnDelete();
 
             $table->enum('type', [
                 'deposit',
-                'expense_payment',
-                'refund',
-                'settlement_payment',
+                'settlement_sent',
                 'settlement_received',
-            ]);
+                'expense_payment'
+            ])->default('deposit');
 
-            $table->decimal('amount', 12, 2);
+            $table->decimal('amount', 10, 2);
 
-            $table->decimal('balance_before', 12, 2);
+            $table->decimal('balance_before', 10, 2)
+                ->default(0);
 
-            $table->decimal('balance_after', 12, 2);
+            $table->decimal('balance_after', 10, 2)
+                ->default(0);
 
-            $table->string('description')->nullable();
+
+            $table->string('description')
+                ->nullable();
 
             $table->timestamps();
-
-            $table->index(['wallet_id', 'created_at']);
-            $table->index('type');
         });
     }
 

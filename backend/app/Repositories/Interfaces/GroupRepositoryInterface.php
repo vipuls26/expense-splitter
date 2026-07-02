@@ -7,26 +7,25 @@ use Illuminate\Support\Collection;
 
 interface GroupRepositoryInterface
 {
-    public function getAllGroups(): Collection;
-
+  
+    // get group of user by user_id
     public function getUserGroups(int $userId): Collection;
 
+    // find group by id
     public function findById(int $id): Group;
 
+    // create group
     public function create(array $data): Group;
 
+    // update group
     public function update(int $id, array $data): Group;
 
+    // delete group
     public function delete(int $id): bool;
 
-    public function addMember(
-        int $groupId,
-        int $userId,
-        string $role = 'member'
-    ): Group;
+    // add member into group
+    public function addMember(int $groupId, int $userId, string $role = 'member'): Group;
 
-    public function removeMember(
-        int $groupId,
-        int $userId
-    ): Group;
+    // remove member from group
+    public function removeMember(int $groupId, int $userId): Group;
 }

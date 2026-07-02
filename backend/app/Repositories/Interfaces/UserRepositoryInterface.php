@@ -6,12 +6,17 @@ use App\Models\User;
 
 interface UserRepositoryInterface
 {
-    // Create a new User record
+    // create new record
     public function create(array $data): User;
 
-    // Retrieve a User record by their email address
+    // fetch user by email
+    // ?User it can either return null or user object
     public function findByEmail(string $email): ?User;
 
-    // Retrieve a User record by their phone number
+    // fetch user by phone number
     public function findByPhone(string $phone): ?User;
 }
+
+
+// interface is only define what the method should look like
+

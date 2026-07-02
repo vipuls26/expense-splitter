@@ -13,16 +13,16 @@ class BalanceService
         private GroupRepositoryInterface $groupRepository
     ) {}
 
+
+    // Calculate each member's balance in a group
     public function calculateBalances(int $groupId): array
     {
         $expenses = $this->expenseRepository->getExpensesForGroup($groupId);
+
         $balances = $this->initializeBalances($groupId);
 
         foreach ($expenses as $expense) {
-            $this->applyExpenseToBalances(
-                $balances,
-                $expense
-            );
+            $this->applyExpenseToBalances($balances, $expense);
         }
 
         $this->roundBalances($balances);
@@ -30,18 +30,20 @@ class BalanceService
         return $balances;
     }
 
+
+    // Calculate settlement transactions
     public function calculateSettlements(int $groupId): array
     {
         $balances = $this->calculateBalances($groupId);
-
-        $data = $this->prepareSettlementData($balances);
+        $settlementData = $this->prepareSettlementData($balances);
 
         return $this->generateSettlements(
-            $data['debtors'],
-            $data['creditors']
+            $settlementData['debtors'],
+            $settlementData['creditors']
         );
     }
 
+    // Calculate user's overall balances across all groups
     public function getUserGlobalBalances(int $userId): array
     {
         $groups = $this->groupRepository->getUserGroups($userId);
@@ -51,20 +53,21 @@ class BalanceService
         $youAreOwed = 0.0;
 
         foreach ($groups as $group) {
-            $groupBalances = $this->calculateBalances($group->id);
+            $balances = $this->calculateBalances($group->id);
 
-            if (isset($groupBalances[$userId])) {
-                $myBalance = $groupBalances[$userId]['balance'];
+            if (! isset($balances[$userId])) {
+                continue;
+            }
 
-                $totalBalance += $myBalance;
+            $balance = $balances[$userId]['balance'];
 
-                if ($myBalance < 0) {
-                    $youOwe += abs($myBalance);
-                } elseif ($myBalance > 0) {
-                    $youAreOwed += $myBalance;
-                }
+            if ($balance < 0) {
+                $youOwe += abs($balance);
+            } elseif ($balance > 0) {
+                $youAreOwed += $balance;
             }
         }
+
 
         return [
             'total_balance' => round($totalBalance, 2),
@@ -73,10 +76,11 @@ class BalanceService
         ];
     }
 
+
+    // Initialize every group member with zero balance.
     private function initializeBalances(int $groupId): array
     {
         $balances = [];
-
         $group = $this->groupRepository->findById($groupId);
 
         if (! $group) {
@@ -93,60 +97,76 @@ class BalanceService
         return $balances;
     }
 
-    private function applyExpenseToBalances(
-        array &$balances,
-        Expense $expense
-    ): void {
+
+    // Apply one expense to balances.
+    private function applyExpenseToBalances(array &$balances, Expense $expense): void
+    {
         $payerId = $expense->paid_by;
 
-        if (isset($balances[$payerId])) {
-            $balances[$payerId]['balance'] += (float) $expense->amount;
-        } else {
+        if (! isset($balances[$payerId])) {
             $balances[$payerId] = [
                 'user' => $expense->payer,
-                'balance' => (float) $expense->amount,
+                'balance' => 0.0,
             ];
         }
 
-        foreach ($expense->splits as $split) {
-            $userId = $split->user_id;
+        // Payer should receive the full expense amount.
+        $balances[$payerId]['balance'] += (float) $expense->amount;
 
-            if (isset($balances[$userId])) {
-                $balances[$userId]['balance'] -= (float) $split->amount_owed;
+        // Each participant owes their split.
+        foreach ($expense->splits as $split) {
+
+            if (! isset($balances[$split->user_id])) {
+                continue;
             }
+
+            $balances[$split->user_id]['balance'] -= (float) $split->amount_owed;
         }
     }
 
+    // Round balances.
     private function roundBalances(array &$balances): void
     {
-        foreach ($balances as &$data) {
-            $data['balance'] = round($data['balance'], 2);
+        foreach ($balances as &$balance) {
+            $balance['balance'] = round($balance['balance'], 2);
         }
     }
 
+
+    // Separate members into debtors and creditors.
     private function prepareSettlementData(array $balances): array
     {
         $debtors = [];
         $creditors = [];
 
-        foreach ($balances as $userId => $data) {
-            if ($data['balance'] < -0.01) {
+        foreach ($balances as $userId => $balance) {
+
+            if ($balance['balance'] < -0.01) {
+
                 $debtors[] = [
                     'user_id' => $userId,
-                    'user' => $data['user'],
-                    'amount' => abs($data['balance']),
+                    'user' => $balance['user'],
+                    'amount' => abs($balance['balance']),
                 ];
-            } elseif ($data['balance'] > 0.01) {
+            } elseif ($balance['balance'] > 0.01) {
+
                 $creditors[] = [
                     'user_id' => $userId,
-                    'user' => $data['user'],
-                    'amount' => $data['balance'],
+                    'user' => $balance['user'],
+                    'amount' => $balance['balance'],
                 ];
             }
         }
 
-        usort($debtors, fn ($a, $b) => $b['amount'] <=> $a['amount']);
-        usort($creditors, fn ($a, $b) => $b['amount'] <=> $a['amount']);
+        usort(
+            $debtors,
+            fn($a, $b) => $b['amount'] <=> $a['amount']
+        );
+
+        usort(
+            $creditors,
+            fn($a, $b) => $b['amount'] <=> $a['amount']
+        );
 
         return [
             'debtors' => $debtors,
@@ -154,18 +174,19 @@ class BalanceService
         ];
     }
 
-    private function generateSettlements(
-        array $debtors,
-        array $creditors
-    ): array {
+
+    // Greedy settlement algorithm
+    private function generateSettlements(array $debtors, array $creditors): array
+    {
         $settlements = [];
 
-        $i = 0;
-        $j = 0;
+        $debtorIndex = 0;
+        $creditorIndex = 0;
 
-        while ($i < count($debtors) && $j < count($creditors)) {
-            $debtor = &$debtors[$i];
-            $creditor = &$creditors[$j];
+        while ($debtorIndex < count($debtors) && $creditorIndex < count($creditors)) {
+
+            $debtor = &$debtors[$debtorIndex];
+            $creditor = &$creditors[$creditorIndex];
 
             $settleAmount = round(
                 min($debtor['amount'], $creditor['amount']),
@@ -183,12 +204,12 @@ class BalanceService
             $debtor['amount'] -= $settleAmount;
             $creditor['amount'] -= $settleAmount;
 
-            if ($debtor['amount'] < 0.01) {
-                $i++;
+            if ($debtor['amount'] <= 0.01) {
+                $debtorIndex++;
             }
 
-            if ($creditor['amount'] < 0.01) {
-                $j++;
+            if ($creditor['amount'] <= 0.01) {
+                $creditorIndex++;
             }
         }
 

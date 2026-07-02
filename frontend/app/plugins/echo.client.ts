@@ -1,12 +1,11 @@
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 import { useAuthStore } from "~/stores/auth";
-import { watch } from "vue";
 
 declare global {
   interface Window {
-    Pusher: any;
-    Echo: any;
+    Pusher: typeof Pusher;
+    Echo: Echo<"reverb">;
   }
 }
 

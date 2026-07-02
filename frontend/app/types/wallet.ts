@@ -1,38 +1,34 @@
+import type { ApiResponse } from "./api";
+
+
+// for wallet 
 export interface Wallet {
-  id: number;
-  balance: string;
+    id: number;
+    balance: string;
 }
 
-export interface WalletTransaction {
-  id: number;
-  type: WalletTransactionType;
-  amount: string;
-  balance_before: string;
-  balance_after: string;
-  description: string | null;
-  created_at: string;
-}
-
-export interface DepositPayload {
-  amount: number;
-}
-
-export interface WalletResponse {
-  success: boolean;
-  message?: string;
-  data: Wallet;
-}
-
-export interface WalletTransactionsResponse {
-  success: boolean;
-  message?: string;
-  data: WalletTransaction[];
-}
-
-// transction type
+// transaction type
 export type WalletTransactionType =
-  | "deposit"
-  | "expense_payment"
-  | "refund"
-  | "settlement_payment"
-  | "settlement_received";
+    | "deposit"
+    | "settlement_sent"
+    | "settlement_received";
+
+// wallet transaction
+export interface WalletTransaction {
+    id: number;
+    type: WalletTransactionType;
+    amount: string;
+    balance_before: string;
+    balance_after: string;
+    description: string | null;
+    created_at: string;
+}
+
+// payload for deposit
+export interface DepositPayload {
+    amount: number;
+}
+
+export type WalletResponse = ApiResponse<Wallet>;
+
+export type WalletTransactionsResponse = ApiResponse<WalletTransaction[]>;

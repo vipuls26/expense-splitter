@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+
 import { useRouter } from "vue-router";
 import { useAuthStore } from "~/stores/auth";
 import BaseInput from "~/components/ui/BaseInput.vue";
@@ -116,6 +116,7 @@ definePageMeta({
   layout: "guest",
 });
 
+// validation
 const registerSchema = toTypedSchema(
   z
     .object({
@@ -166,7 +167,6 @@ const errorMsg = ref("");
 
 const router = useRouter();
 const authStore = useAuthStore();
-const api = useApi();
 const { addToast } = useToast();
 
 // handle the registration form submission
@@ -174,32 +174,24 @@ const handleRegister = handleSubmit(async (values) => {
   errorMsg.value = "";
 
   try {
-    const response: any = await api("/register", {
-      method: "POST",
-      body: {
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        password_confirmation: values.password_confirmation,
-        phone_no: values.phone_no,
-      },
-    });
+   
+    const response = await authStore.register(values);
 
     if (response.success) {
-      // save token and redirect on success
-      authStore.setAuth(response.data.user, response.data.token);
       addToast("Registration successful! Welcome.", "success");
       router.push("/");
     } else {
       errorMsg.value = response.message || "Registration failed";
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { status?: number; _data?: { errors?: Record<string, string[]>; message?: string } } };
     if (err.response?.status === 422 && err.response?._data?.errors) {
-      // map backend validation errors to frontend inputs
+      
       const apiErrors = err.response._data.errors;
       const formErrors: Record<string, string> = {};
       for (const key in apiErrors) {
-        formErrors[key] = apiErrors[key][0];
+        const firstError = apiErrors[key]?.[0];
+        if (firstError) formErrors[key] = firstError;
       }
       setErrors(formErrors);
     } else if (err.response?._data?.message) {
@@ -211,4 +203,5 @@ const handleRegister = handleSubmit(async (values) => {
     }
   }
 });
+
 </script>

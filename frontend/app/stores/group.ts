@@ -1,9 +1,5 @@
 import { useApi } from "~/composables/useApi";
-import type {
-  Group,
-  CreateGroupPayload,
-  UpdateGroupPayload,
-} from "~/types/group";
+import type { Group, CreateGroupPayload, UpdateGroupPayload } from "~/types/group";
 import type { ApiResponse, MessageResponse } from "~/types/api";
 import type { Id } from "~/types/common";
 
@@ -67,14 +63,8 @@ export const useGroupStore = defineStore("group", () => {
       );
       if (response.success) {
         currentGroup.value = response.data;
+        updateGroupInstance(response.data);
 
-        const index = groups.value.findIndex(
-          (group) => group.id === Number(groupId),
-        );
-
-        if (index !== -1) {
-          groups.value[index] = response.data;
-        }
       }
       return response;
     });
@@ -87,10 +77,7 @@ export const useGroupStore = defineStore("group", () => {
         method: "DELETE",
       });
       if (response.success) {
-        groups.value = groups.value.filter((group) => group.id !== Number(id));
-        if (currentGroup.value?.id === Number(id)) {
-          currentGroup.value = null;
-        }
+        removeGroupFromState(id);
       }
       return response;
     });
@@ -107,14 +94,7 @@ export const useGroupStore = defineStore("group", () => {
       );
       if (response.success) {
         currentGroup.value = response.data;
-
-        const index = groups.value.findIndex(
-          (group) => group.id === Number(groupId),
-        );
-
-        if (index !== -1) {
-          groups.value[index] = response.data;
-        }
+        updateGroupInstance(response.data);
       }
       return response;
     });
@@ -127,10 +107,7 @@ export const useGroupStore = defineStore("group", () => {
         method: "POST",
       });
       if (response.success) {
-        groups.value = groups.value.filter((g) => g.id !== Number(groupId));
-        if (currentGroup.value?.id === Number(groupId)) {
-          currentGroup.value = null;
-        }
+        removeGroupFromState(groupId);
       }
       return response;
     });
@@ -145,18 +122,34 @@ export const useGroupStore = defineStore("group", () => {
       });
       if (response.success) {
         currentGroup.value = response.data;
-
-        const index = groups.value.findIndex(
-          (group) => group.id === Number(groupId),
-        );
-
-        if (index !== -1) {
-          groups.value[index] = response.data;
-        }
+        updateGroupInstance(response.data);
       }
       return response;
     });
   }
+
+  // update group instance
+  function updateGroupInstance(group: Group) {
+    const index = groups.value.findIndex(
+      g => g.id === group.id
+    );
+
+    if (index !== -1) {
+      groups.value[index] = group;
+    }
+  }
+
+  // remove group instance 
+  function removeGroupFromState(groupId: Id) {
+    groups.value = groups.value.filter(
+      group => group.id !== Number(groupId)
+    );
+
+    if (currentGroup.value?.id === Number(groupId)) {
+      currentGroup.value = null;
+    }
+  }
+
 
   // utility function to handle loading state for async operations
   async function execute<T>(callback: () => Promise<T>): Promise<T> {

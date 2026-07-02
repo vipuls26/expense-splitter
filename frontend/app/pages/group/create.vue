@@ -60,7 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useGroupStore } from "~/stores/group";
 import { useToast } from "~/composables/useToast";
@@ -121,13 +120,15 @@ const handleCreateGroup = handleSubmit(async (values) => {
     } else {
       errorMsg.value = response.message || "Failed to create group";
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { status?: number; _data?: { errors?: Record<string, string[]>; message?: string } } };
     if (err.response?.status === 422 && err.response?._data?.errors) {
       // map backend validation errors to frontend inputs
       const apiErrors = err.response._data.errors;
       const formErrors: Record<string, string> = {};
       for (const key in apiErrors) {
-        formErrors[key] = apiErrors[key][0];
+        const firstError = apiErrors[key]?.[0];
+        if (firstError) formErrors[key] = firstError;
       }
       setErrors(formErrors);
       return;

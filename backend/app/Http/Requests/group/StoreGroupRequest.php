@@ -31,11 +31,13 @@ class StoreGroupRequest extends FormRequest
     public function messages(): array
     {
         return [
+            // group name
             'name.required' => 'Group name is required.',
             'name.string' => 'Group name must be a string.',
             'name.max' => 'Group name must not exceed 255 characters.',
             'name.min' => 'Group name must be at least 3 characters long.',
 
+            // group description ( optional )
             'description.string' => 'Description must be a string.',
         ];
     }

@@ -8,6 +8,7 @@ use App\Http\Resources\ExpenseResource;
 use App\Http\Resources\SettlementResource;
 use App\Services\BalanceService;
 use App\Services\ExpenseService;
+use Illuminate\Support\Facades\Log;
 
 class SettlementController extends Controller
 {
@@ -43,6 +44,10 @@ class SettlementController extends Controller
             $validated['to_user_id'],
             $validated['amount']
         );
+
+        Log::info('Expense Created', [
+            'expense' => $expense,
+        ]);
 
         return response()->json([
             'success' => true,

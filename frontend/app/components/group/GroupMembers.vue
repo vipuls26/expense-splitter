@@ -118,7 +118,8 @@ async function handleAddMember() {
     } else {
       addToast(response.message || "Failed to add member", "error");
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { _data?: { message?: string } } };
     addToast(getErrorMessage(err), "error");
   } finally {
     isAddingMember.value = false;
@@ -143,7 +144,8 @@ const executeRemoveMember = async () => {
     if (response.success) {
       addToast("Member removed successfully", "success");
     }
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as { response?: { _data?: { message?: string } } };
     addToast(getErrorMessage(err), "error");
   } finally {
     isRemoving.value = false;
@@ -153,7 +155,8 @@ const executeRemoveMember = async () => {
 };
 
 // helper function for error
-function getErrorMessage(error: any): string {
-  return error?.response?._data?.message ?? "Something went wrong";
+function getErrorMessage(error: unknown): string {
+  const err = error as { response?: { _data?: { message?: string } } };
+  return err?.response?._data?.message ?? "Something went wrong";
 }
 </script>

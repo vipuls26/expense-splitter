@@ -2,61 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Wallet\DepositRequest;
+use App\Http\Requests\wallet\DepositRequest;
 use App\Http\Resources\WalletResource;
-use App\Http\Resources\WalletTransactionResource;
+use App\Http\Resources\WalletTransactioResource;
 use App\Services\WalletService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class WalletController extends Controller
 {
+    // inject service in controller
     public function __construct(private WalletService $walletService) {}
 
-    // get current user's wallet
-    public function index(): JsonResponse
+    // show loggin user wallet
+    public function index(Request $request)
     {
-        $wallet = $this->walletService->getWallet(Auth::user());
-
+        $wallet = $this->walletService->getWallet($request->user());
         return response()->json([
             'success' => true,
+            'message' => 'Wallet fetched successfully',
             'data' => new WalletResource($wallet),
-        ]);
+        ], 200);
     }
 
-    // deposit money into wallet
-    public function deposit(DepositRequest $request): JsonResponse
+    // deposit money
+    public function deposit(DepositRequest $request)
     {
-        $wallet = $this->walletService->deposit(
-            Auth::user(),
-            $request->validated()['amount']
-        );
-
+        $amount = $request->validated('amount');
+        $wallet =  $this->walletService->deposit($request->user(), $amount);
         return response()->json([
             'success' => true,
-            'message' => 'Deposit successful',
+            'message' => 'Money deposited successfully',
             'data' => new WalletResource($wallet),
-        ]);
+        ], 200);
     }
 
-    // get wallet transactions
-    public function transactions(Request $request): JsonResponse
+    // get transaction
+    public function transactions(Request $request)
     {
-        $perPage = $request->query('per_page', 10);
-        $transactions = $this->walletService->getTransactions(Auth::user(), (int) $perPage);
-
-        $resource = WalletTransactionResource::collection($transactions)->response()->getData(true);
-
+        $transactions = $this->walletService->getTransactions($request->user());
         return response()->json([
             'success' => true,
-            'data' => $resource['data'],
-            'pagination' => [
-                'currentPage' => $transactions->currentPage(),
-                'lastPage' => $transactions->lastPage(),
-                'total' => $transactions->total(),
-                'perPage' => $transactions->perPage(),
-            ],
-        ]);
+            'message' => 'Transaction fetch successfully',
+            'data' => WalletTransactioResource::collection($transactions),
+        ], 200);
     }
 }

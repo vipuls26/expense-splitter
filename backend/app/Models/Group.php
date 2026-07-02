@@ -29,8 +29,4 @@ class Group extends Model
         return $this->hasMany(Expense::class);
     }
 
-    public function budgets(): HasMany
-    {
-        return $this->hasMany(Budget::class);
-    }
 }
