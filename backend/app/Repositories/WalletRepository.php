@@ -17,7 +17,7 @@ class WalletRepository implements WalletRepositoryInterface
 
     public function createTransaction(Wallet $wallet, array $data): WalletTransaction
     {
-        return WalletTransaction::create($data);
+        return $wallet->transactions()->create($data);
     }
 
 
@@ -29,7 +29,7 @@ class WalletRepository implements WalletRepositoryInterface
 
     public function getTransactionsByUserId(int $userId): Collection
     {
-        $wallet = Wallet::findOrFail($userId);
+        $wallet = Wallet::where('user_id', $userId)->firstOrFail();
 
         return $wallet->transactions()->latest()->get();
     }

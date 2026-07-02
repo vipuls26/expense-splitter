@@ -21,6 +21,7 @@
 import { useAuthStore } from "~/stores/auth";
 import { useGroupStore } from "~/stores/group";
 import { useDashboardStore } from "~/stores/dashboard";
+import { useWalletStore } from "~/stores/wallet";
 import DashboardStats from "~/components/dashboard/DashboardStats.vue";
 import GroupList from "~/components/group/GroupList.vue";
 
@@ -32,12 +33,14 @@ definePageMeta({
 const authStore = useAuthStore();
 const groupStore = useGroupStore();
 const dashboardStore = useDashboardStore();
+const walletStore = useWalletStore();
 
 onMounted(async () => {
   if (authStore.isLoggedIn) {
     await Promise.all([
       groupStore.fetchGroups(),
       dashboardStore.fetchStats(),
+      walletStore.fetchWallet(),
     ]);
   }
 });

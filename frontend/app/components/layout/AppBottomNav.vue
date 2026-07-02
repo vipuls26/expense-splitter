@@ -25,6 +25,7 @@
 const navigation = [
   { name: "Dashboard", href: "/", icon: "pi-th-large" },
   { name: "Groups", href: "/group", icon: "pi-users" },
+  { name: "Wallet", href: "/wallet", icon: "pi-wallet" },
 ];
 </script>
 

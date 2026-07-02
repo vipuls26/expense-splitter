@@ -172,7 +172,7 @@ async function confirmSettle() {
     const response = await settlementStore.settleUp(
       props.groupId,
       to.id,
-      amount,
+      amount
     );
 
     if (response.success) {

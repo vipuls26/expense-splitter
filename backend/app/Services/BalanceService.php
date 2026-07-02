@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Expense;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
-use Illuminate\Support\Facades\Log;
 
 class BalanceService
 {
@@ -23,15 +22,10 @@ class BalanceService
         $balances = $this->initializeBalances($groupId);
 
         foreach ($expenses as $expense) {
-
-            Log::info("Processing expense - ID: {$expense->id}, Paid By: {$expense->payer->name}, Amount: {$expense->amount}");
-
             $this->applyExpenseToBalances($balances, $expense);
         }
 
         $this->roundBalances($balances);
-
-        Log::info('Final balances: ' . json_encode(collect($balances)->map(fn($item) => ['user' => $item['user']->name, 'balance' => $item['balance']])->values()->toArray()));
 
         return $balances;
     }
@@ -40,16 +34,8 @@ class BalanceService
     // Calculate settlement transactions
     public function calculateSettlements(int $groupId): array
     {
-        Log::info("Settlement calculation started - Group ID: {$groupId}");
-
         $balances = $this->calculateBalances($groupId);
-
-        Log::info('Calculated balances: ' . json_encode(collect($balances)->map(fn($item) => ['user' => $item['user']->name, 'balance' => $item['balance']])->values()->toArray()));
-
         $settlementData = $this->prepareSettlementData($balances);
-
-        Log::info('Prepared settlement data - Debtors: ' . json_encode(collect($settlementData['debtors'])->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()) . ', Creditors: ' . json_encode(collect($settlementData['creditors'])->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()));
-
 
         return $this->generateSettlements(
             $settlementData['debtors'],
@@ -75,14 +61,13 @@ class BalanceService
 
             $balance = $balances[$userId]['balance'];
 
-            $totalBalance += $balance;
-
             if ($balance < 0) {
                 $youOwe += abs($balance);
             } elseif ($balance > 0) {
                 $youAreOwed += $balance;
             }
         }
+
 
         return [
             'total_balance' => round($totalBalance, 2),
@@ -95,21 +80,14 @@ class BalanceService
     // Initialize every group member with zero balance.
     private function initializeBalances(int $groupId): array
     {
-
-
         $balances = [];
-
         $group = $this->groupRepository->findById($groupId);
 
         if (! $group) {
-
-            Log::warning("Group not found - Group ID: {$groupId}");
-
             return $balances;
         }
 
         foreach ($group->members as $member) {
-
             $balances[$member->id] = [
                 'user' => $member,
                 'balance' => 0.0,
@@ -123,8 +101,6 @@ class BalanceService
     // Apply one expense to balances.
     private function applyExpenseToBalances(array &$balances, Expense $expense): void
     {
-
-
         $payerId = $expense->paid_by;
 
         if (! isset($balances[$payerId])) {
@@ -139,8 +115,6 @@ class BalanceService
 
         // Each participant owes their split.
         foreach ($expense->splits as $split) {
-
-            Log::info("Split - User: {$split->user->name}, Amount Owed: {$split->amount_owed}");
 
             if (! isset($balances[$split->user_id])) {
                 continue;
@@ -162,8 +136,6 @@ class BalanceService
     // Separate members into debtors and creditors.
     private function prepareSettlementData(array $balances): array
     {
-        Log::info('Preparing settlement data.');
-
         $debtors = [];
         $creditors = [];
 
@@ -196,10 +168,6 @@ class BalanceService
             fn($a, $b) => $b['amount'] <=> $a['amount']
         );
 
-        Log::info('Debtors: ' . json_encode(collect($debtors)->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()));
-
-        Log::info('Creditors: ' . json_encode(collect($creditors)->map(fn($item) => ['user' => $item['user']->name, 'amount' => $item['amount']])->values()->toArray()));
-
         return [
             'debtors' => $debtors,
             'creditors' => $creditors,
@@ -210,8 +178,6 @@ class BalanceService
     // Greedy settlement algorithm
     private function generateSettlements(array $debtors, array $creditors): array
     {
-        Log::info('Generating settlements.');
-
         $settlements = [];
 
         $debtorIndex = 0;
@@ -222,14 +188,10 @@ class BalanceService
             $debtor = &$debtors[$debtorIndex];
             $creditor = &$creditors[$creditorIndex];
 
-            Log::info("Current pair - Debtor: {$debtor['user']->name} ({$debtor['amount']}), Creditor: {$creditor['user']->name} ({$creditor['amount']})");
-
             $settleAmount = round(
                 min($debtor['amount'], $creditor['amount']),
                 2
             );
-
-            Log::info("Settlement amount: {$settleAmount}");
 
             if ($settleAmount > 0) {
                 $settlements[] = [
@@ -242,23 +204,14 @@ class BalanceService
             $debtor['amount'] -= $settleAmount;
             $creditor['amount'] -= $settleAmount;
 
-            Log::info("Updated balances - Debtor Remaining: {$debtor['amount']}, Creditor Remaining: {$creditor['amount']}");
-
             if ($debtor['amount'] <= 0.01) {
-
-                Log::info("Debtor settled - User: {$debtor['user']->name}");
                 $debtorIndex++;
             }
 
             if ($creditor['amount'] <= 0.01) {
-
-                Log::info("Creditor settled - User: {$creditor['user']->name}");
-
                 $creditorIndex++;
             }
         }
-
-        Log::info('Generated settlements: ' . json_encode(collect($settlements)->map(fn($item) => ['from' => $item['from']->name, 'to' => $item['to']->name, 'amount' => $item['amount']])->values()->toArray()));
 
         return $settlements;
     }

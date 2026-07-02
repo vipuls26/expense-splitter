@@ -6,6 +6,7 @@ use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SettlementController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -38,8 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Settlements
     Route::get('/groups/{id}/balances', [SettlementController::class, 'getBalances']);
     Route::post('/groups/{id}/settle', [SettlementController::class, 'settleUp']);
-
-
 });
 
 
@@ -49,3 +48,9 @@ Route::middleware('auth:sanctum')->prefix('/expenses')->group(function () {
 });
 
 
+// wallet
+Route::middleware('auth:sanctum')->prefix('wallet')->group(function () {
+    Route::get('/', [WalletController::class, 'index']);
+    Route::post('/deposit', [WalletController::class, 'deposit']);
+    Route::get('/transactions', [WalletController::class, 'transactions']);
+});

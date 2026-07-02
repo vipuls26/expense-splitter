@@ -22,7 +22,8 @@ return new class extends Migration
                 'deposit',
                 'settlement_sent',
                 'settlement_received',
-            ]);
+                'expense_payment'
+            ])->default('deposit');
 
             $table->decimal('amount', 10, 2);
 

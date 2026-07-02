@@ -22,6 +22,7 @@ class ExpenseCategorySeeder extends Seeder
             ['name' => 'Medical', 'icon' => 'pi pi-heart', 'color' => '#ef4444'],
             ['name' => 'Fuel', 'icon' => 'pi pi-bolt', 'color' => '#eab308'],
             ['name' => 'Miscellaneous', 'icon' => 'pi pi-box', 'color' => '#64748b'],
+            ['name' => 'Payment', 'icon' => 'pi pi-money-bill', 'color' => '#14b8a6'],
         ];
 
         foreach ($categories as $category) {

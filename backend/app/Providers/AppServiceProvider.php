@@ -9,7 +9,9 @@ use App\Repositories\GroupRepository;
 use App\Repositories\Interfaces\ExpenseRepositoryInterface;
 use App\Repositories\Interfaces\GroupRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\Interfaces\WalletRepositoryInterface;
 use App\Repositories\UserRepository;
+use App\Repositories\WalletRepository;
 use App\Services\AuthService;
 use Illuminate\Support\ServiceProvider;
 
@@ -34,11 +36,15 @@ class AppServiceProvider extends ServiceProvider
             GroupRepository::class
         );
 
-        // Removed GroupServiceInterface binding as it does not exist
 
         $this->app->bind(
             ExpenseRepositoryInterface::class,
             ExpenseRepository::class
+        );
+
+        $this->app->bind(
+            WalletRepositoryInterface::class,
+            WalletRepository::class
         );
     }
 

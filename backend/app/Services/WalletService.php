@@ -32,7 +32,7 @@ class WalletService
         // save before balance
         $balanceBefore = $wallet->balance;
 
-        // db transaction if any query for rollback to maintain database consistenace
+        // db transaction if any query for rollback to maintain database consistency
         DB::transaction(function () use ($wallet, $amount, $balanceBefore) {
 
             // update balance
@@ -46,12 +46,12 @@ class WalletService
 
             // create wallet transaction
             $this->walletRepository->createTransaction($wallet, [
-
+                'wallet_id'      => $wallet->id,
                 'amount' => $amount,
                 'balance_before' => $balanceBefore,
                 'balance_after' => $balanceAfter,
                 'type' => WalletTransactionType::Deposit->value,
-
+                'description' => WalletTransactionType::Deposit->description(),
             ]);
         });
 
@@ -72,9 +72,10 @@ class WalletService
     // helper method for checking  user wallet exist
     private function getUserWallet(User $user): Wallet
     {
-
+        // check if wallet exist for loggin user
         $wallet = $this->walletRepository->findWalletByUserId($user->id);
 
+        // throw error
         if (! $wallet) {
             throw new ModelNotFoundException('Wallet not found');
         }
