@@ -10,7 +10,7 @@
             <TransactionList />
         </div>
 
-        <DepositModal :is-open="isDepositModalOpen" @close="closeDepositModal" @depositSuccess="walletStore.fetchTransactions" />
+        <DepositModal :is-open="isDepositModalOpen" @close="closeDepositModal" @depositSuccess="walletStore.fetchTransactions()" />
     </div>
 
 </template>

@@ -5,6 +5,7 @@ namespace App\Repositories\Interfaces;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface WalletRepositoryInterface
 {
@@ -20,6 +21,9 @@ interface WalletRepositoryInterface
     // create transaction
     public function createTransaction(Wallet $wallet, array $data): WalletTransaction;
 
-    // 
-    public function getTransactions(Wallet $wallet): Collection;
+    // get transactions with filters and pagination
+    public function getTransactions(Wallet $wallet, array $filters = [], int $perPage = 10): LengthAwarePaginator;
+
+    // get transactions for export
+    public function exportTransactions(Wallet $wallet, array $filters = []): Collection;
 }

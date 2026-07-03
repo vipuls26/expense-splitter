@@ -6,6 +6,7 @@ use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use App\Repositories\Interfaces\WalletRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class WalletRepository implements WalletRepositoryInterface
 {
@@ -34,10 +35,58 @@ class WalletRepository implements WalletRepositoryInterface
         return $wallet->transactions()->latest()->get();
     }
 
-    public function getTransactions(Wallet $wallet): Collection
+    public function getTransactions(Wallet $wallet, array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        return $wallet->transactions()
-            ->latest()
-            ->get();
+        $query = $wallet->transactions()->latest();
+
+        $this->applySearchFilter($query, $filters);
+
+        $this->applyTypeFilter($query, $filters);
+
+        $this->applyDateFilter($query, $filters);
+
+        return $query->paginate($perPage);
+    }
+
+    public function exportTransactions(Wallet $wallet, array $filters = []): Collection
+    {
+        $query = $wallet->transactions()->latest();
+
+        $this->applySearchFilter($query, $filters);
+
+        $this->applyTypeFilter($query, $filters);
+
+        $this->applyDateFilter($query, $filters);
+
+        return $query->get();
+    }
+
+    private function applySearchFilter($query, array $filters): void
+    {
+        if (!empty($filters['search'])) {
+            $query->where(function ($q) use ($filters) {
+                $q->where('description', 'like', '%' . $filters['search'] . '%')
+                  ->orWhere('type', 'like', '%' . $filters['search'] . '%')
+                  ->orWhere('amount', 'like', '%' . $filters['search'] . '%');
+            });
+        }
+    }
+
+    private function applyTypeFilter($query, array $filters): void
+    {
+        if (!empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+    }
+
+    private function applyDateFilter($query, array $filters): void
+    {
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('created_at', '>=', $filters['date_from']);
+        }
+
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('created_at', '<=', $filters['date_to']);
+        }
     }
 }

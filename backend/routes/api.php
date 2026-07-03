@@ -53,4 +53,5 @@ Route::middleware('auth:sanctum')->prefix('wallet')->group(function () {
     Route::get('/', [WalletController::class, 'index']);
     Route::post('/deposit', [WalletController::class, 'deposit']);
     Route::get('/transactions', [WalletController::class, 'transactions']);
+    Route::get('/transactions/export', [WalletController::class, 'export']);
 });

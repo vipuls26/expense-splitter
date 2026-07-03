@@ -12,10 +12,10 @@ enum WalletTransactionType: string
     public function description(): string
     {
         return match ($this) {
-            self::Deposit => 'Money deposited in wallet',
-            self::ExpensePayment => 'Expense payment',
-            self::SettlementSent => 'Settlement sent',
-            self::SettlementReceived => 'Settlement received',
+            self::Deposit => 'money deposited in wallet',
+            self::ExpensePayment => 'expense payment',
+            self::SettlementSent => 'settlement sent',
+            self::SettlementReceived => 'settlement received',
         };
 
 

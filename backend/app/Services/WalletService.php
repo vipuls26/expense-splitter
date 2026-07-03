@@ -8,6 +8,7 @@ use App\Models\Wallet;
 use App\Repositories\Interfaces\WalletRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class WalletService
@@ -60,12 +61,18 @@ class WalletService
     }
 
     // get transaction hisotry for user
-    public function getTransactions(User $user): Collection
+    public function getTransactions(User $user, array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         // check if wallet exist
         $wallet = $this->getUserWallet($user);
         // fetch wallet transaction for logging user
-        return $this->walletRepository->getTransactions($wallet);
+        return $this->walletRepository->getTransactions($wallet, $filters, $perPage);
+    }
+
+    public function exportTransactions(User $user, array $filters = []): Collection
+    {
+        $wallet = $this->getUserWallet($user);
+        return $this->walletRepository->exportTransactions($wallet, $filters);
     }
 
 
